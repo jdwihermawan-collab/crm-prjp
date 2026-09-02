@@ -525,6 +525,11 @@
             </select>
           </div>
 
+          <div class="md:col-span-2">
+            <label class="field-label" for="csNote">Catatan Informasi Marketing</label>
+            <textarea id="csNote" name="csNote" rows="2" placeholder="Contoh: Buyer minta dihubungi sore jam 4, sudah dijelaskan promo DP 0%" class="field-input"></textarea>
+          </div>
+
           <div id="assignedToFieldWrap" class="md:col-span-2 md:max-w-xs">
             <label class="field-label" for="assignedTo">Tugaskan ke Marketing</label>
             <select required id="assignedTo" name="assignedTo" class="field-input">
@@ -581,6 +586,11 @@
                   <p class="text-xs text-[#5c6b62]">Marketing Bertugas</p>
                   <p id="successMarketing" class="font-semibold">-</p>
                 </div>
+              </div>
+
+              <div id="successNoteWrap" class="hidden mt-3 text-sm">
+                <p class="text-xs text-[#5c6b62]">Catatan Informasi Marketing</p>
+                <p id="successNote" class="font-medium mt-0.5">-</p>
               </div>
 
               <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-5">
@@ -720,12 +730,14 @@
 
         <label class="field-label" for="statusSelect">Status Baru</label>
         <select id="statusSelect" class="modal-input mb-4">
+          <option value="Awal Chat">Awal Chat</option>
           <option value="Follow-Up 1">Follow-Up 1</option>
           <option value="Follow-Up 2">Follow-Up 2</option>
           <option value="Follow-Up 3">Follow-Up 3</option>
           <option value="Site Visit">Site Visit</option>
           <option value="Closed (Deal)">Closed (Deal)</option>
           <option value="Lost (Batal)">Lost (Batal)</option>
+          <option value="Lain-lain">Lain-lain</option>
         </select>
 
         <label class="field-label" for="nextFollowUpDate">Jadwal Follow-Up Berikutnya</label>
@@ -774,6 +786,11 @@
           <p class="text-xs text-[#5c6b62]">Jadwal Follow-Up Berikutnya</p>
           <p id="detailModalFollowUp" class="font-medium">-</p>
         </div>
+      </div>
+
+      <div id="detailModalNoteWrap" class="hidden mb-4 text-sm">
+        <p class="text-xs text-[#5c6b62]">Catatan Informasi Marketing</p>
+        <p id="detailModalNote" class="font-medium mt-0.5">-</p>
       </div>
 
       <div class="flex items-center gap-2 mb-5">
@@ -949,6 +966,9 @@
     // Lead yang sudah Closed/Lost selalu hijau.
     function computeSla(lead) {
       if (CLOSED_STATUSES.indexOf(lead.status) !== -1) return 'green';
+      // Lead 'New' (baru dari CS, belum pernah di-chat marketing) selalu ditandai merah
+      // supaya langsung terlihat mencolok sampai marketing mengubah status ke 'Awal Chat'.
+      if (lead.status === 'New') return 'red';
       const follow = toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt);
       const diff = daysDiffDateOnly(follow, new Date());
       if (diff > 1) return 'green';   // masih > 1 hari lagi
@@ -960,6 +980,7 @@
       if (CLOSED_STATUSES.indexOf(lead.status) !== -1) {
         return lead.status === 'Closed (Deal)' ? 'Deal sudah closing' : 'Lead ditandai batal';
       }
+      if (lead.status === 'New') return 'Lead baru, belum pernah di-chat &ndash; segera hubungi sekarang';
       const follow = toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt);
       const tgl = formatDateID(follow);
       const diff = daysDiffDateOnly(follow, new Date());
@@ -1100,7 +1121,10 @@
     // atau jadwal follow-up berikutnya sudah tiba hari ini / sudah lewat.
     function needsAttentionNow(lead) {
       if (CLOSED_STATUSES.indexOf(lead.status) !== -1) return false;
+      // Lead berstatus 'New' (baru masuk dari CS, belum pernah di-chat marketing)
+      // selalu dianggap butuh perhatian, sampai statusnya diubah ke 'Awal Chat' atau tahap berikutnya.
       if (lead.status === 'New') return true;
+      if (lead.status === 'Awal Chat') return true;
       const follow = toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt);
       return daysDiffDateOnly(follow, new Date()) <= 0;
     }
@@ -1481,7 +1505,7 @@
       container.innerHTML = names.map(function (name) {
         const list = allLeadsData.filter(function (l) { return l.assignedTo === name; });
         const aktif = list.filter(function (l) { return CLOSED_STATUSES.indexOf(l.status) === -1; }).length;
-        const belum = list.filter(function (l) { return l.status === 'New'; }).length;
+        const belum = list.filter(function (l) { return l.status === 'New' || l.status === 'Awal Chat'; }).length;
         const initial = name.trim().charAt(0).toUpperCase();
         return '<button type="button" onclick="showMarketingDetail(\'' + escapeHtml(name).replace(/'/g, "\\'") + '\')" class="dash-card text-left p-5">' +
           '<div class="flex items-center gap-3 mb-4">' +
@@ -1688,6 +1712,15 @@
       if (projectEl) projectEl.textContent = lead.project;
       if (marketingEl) marketingEl.textContent = lead.assignedTo;
 
+      const noteWrap = document.getElementById('successNoteWrap');
+      const noteEl = document.getElementById('successNote');
+      if (lead.csNote) {
+        if (noteEl) noteEl.textContent = lead.csNote;
+        if (noteWrap) noteWrap.classList.remove('hidden');
+      } else {
+        if (noteWrap) noteWrap.classList.add('hidden');
+      }
+
       const formWrap = document.getElementById('csInputFormWrap');
       const card = document.getElementById('csSuccessCard');
       if (formWrap) formWrap.classList.add('hidden');
@@ -1735,6 +1768,7 @@
         const waNumber = document.getElementById('waNumber').value.trim();
         const adSource = document.getElementById('adSource').value.trim();
         const project = document.getElementById('project').value;
+        const csNote = document.getElementById('csNote').value.trim();
 
         // Tab Umum: marketing dipilih manual lewat dropdown.
         // Tab Iklan: marketing ditentukan otomatis dari rotasi round-robin 11 marketing.
@@ -1751,6 +1785,7 @@
           adSource: adSource,
           project: project,
           assignedTo: assignedTo,
+          csNote: csNote, // catatan/keterangan opsional dari CS untuk marketing, diisi saat input lead baru
           isAdLead: isAdLead, // penanda lead dari Tab Iklan, dipakai untuk hitung giliran rotasi berikutnya
           status: 'New',
           nextFollowUpDate: defaultNextFollowUp(), // default: 3 hari dari hari ini
@@ -1771,7 +1806,8 @@
             waNumber: waNumber,
             adSource: adSource,
             project: project,
-            assignedTo: assignedTo
+            assignedTo: assignedTo,
+            csNote: csNote
           });
         }).catch(function (err) {
           alert('Gagal menyimpan lead: ' + err.message);
@@ -1989,6 +2025,15 @@
       document.getElementById('detailModalFollowUp').textContent =
         formatDateID(toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt));
       document.getElementById('detailModalWaLink').href = waLink(lead.waNumber);
+
+      const noteWrap = document.getElementById('detailModalNoteWrap');
+      const noteText = lead.csNote || lead.leadNote || '';
+      if (noteText) {
+        document.getElementById('detailModalNote').textContent = noteText;
+        noteWrap.classList.remove('hidden');
+      } else {
+        noteWrap.classList.add('hidden');
+      }
 
       const statusBadge = document.getElementById('detailModalStatus');
       statusBadge.textContent = lead.status;
