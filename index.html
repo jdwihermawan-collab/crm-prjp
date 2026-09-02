@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podorukun Lead Tracker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16241d;
+    --paper:#f6f4ef;
+    --card:#ffffff;
+    --line:#e4e0d6;
+    --green:#0f6b4c;
+    --green-dark:#0b5039;
+    --green-bg:#e9f5ef;
+    --amber:#9a6b12;
+    --amber-dot:#d99a1f;
+    --amber-bg:#fbf1dc;
+    --red:#a3352c;
+    --red-dot:#d9483c;
+    --red-bg:#fbe9e7;
+  }
+  body{
+    font-family:'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .hidden{ display:none !important; }
+
+  /* Shared form controls */
+  .field-label{
+    font-size:0.8125rem;
+    font-weight:600;
+    color:#4b5a52;
+    margin-bottom:0.375rem;
+    display:block;
+  }
+  .field-input{
+    width:100%;
+    background:#fbfaf7;
+    border:1px solid var(--line);
+    border-radius:0.5rem;
+    padding:0.625rem 0.75rem;
+    font-size:0.9375rem;
+    color:var(--ink);
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .field-input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:#ffffff;
+    box-shadow:0 0 0 3px rgba(15,107,76,0.12);
+  }
+
+  /* Brand mark */
+  .brand-mark{
+    width:2.25rem;
+    height:2.25rem;
+    border-radius:0.625rem;
+    background:linear-gradient(155deg,#1a8a63,var(--green-dark));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+
+  /* Buttons */
+  .btn-primary{
+    background:var(--green);
+    transition:background 0.15s ease, transform 0.1s ease;
+  }
+  .btn-primary:hover{ background:var(--green-dark); }
+  .btn-primary:active{ transform:translateY(1px); }
+  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
+
+  .btn-ghost{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.35);
+    color:#ffffff;
+    transition:background 0.15s ease;
+  }
+  .btn-ghost:hover{ background:rgba(255,255,255,0.12); }
+
+  .cancel-btn{
+    background:#eceae3;
+    color:var(--ink);
+    transition:background 0.15s ease, transform 0.1s ease;
+  }
+  .cancel-btn:hover{ background:#e1ded4; }
+  .cancel-btn:active{ transform:translateY(1px); }
+
+  /* Status / SLA pills */
+  .sla-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:0.375rem;
+    font-size:0.75rem;
+    font-weight:700;
+    padding:0.3rem 0.7rem;
+    border-radius:999px;
+  }
+  .sla-pill::before{
+    content:"";
+    width:0.4rem;
+    height:0.4rem;
+    border-radius:999px;
+  }
+  .sla-green{ background:var(--green-bg); color:var(--green-dark); }
+  .sla-green::before{ background:var(--green); }
+  .sla-amber{ background:var(--amber-bg); color:var(--amber); }
+  .sla-amber::before{ background:var(--amber-dot); }
+  .sla-red{ background:var(--red-bg); color:var(--red); }
+  .sla-red::before{ background:var(--red-dot); }
+
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:0.375rem;
+    font-size:0.75rem;
+    font-weight:600;
+    padding:0.25rem 0.625rem;
+    border-radius:999px;
+    background:#e9f5ef;
+    color:var(--green-dark);
+  }
+  .status-pill::before{
+    content:"";
+    width:0.4rem;
+    height:0.4rem;
+    border-radius:999px;
+    background:var(--green);
+  }
+
+  /* CS: table */
+  th{ font-size:0.75rem; font-weight:700; color:#5c6b62; text-align:left; }
+  tbody tr:hover{ background:#faf9f5; }
+
+  /* CS/Admin: dashboard grid kartu marketing */
+  .dash-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:0.875rem;
+    width:100%;
+    transition:border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  }
+  .dash-card:hover{
+    border-color:var(--green);
+    box-shadow:0 2px 10px rgba(15,107,76,0.08);
+  }
+  .dash-card:active{ transform:translateY(1px); }
+
+  /* Marketing: lead cards */
+  .lead-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left-width:4px;
+    border-radius:0.875rem;
+  }
+  .lead-card.edge-green{ border-left-color:var(--green); }
+  .lead-card.edge-amber{ border-left-color:var(--amber-dot); }
+  .lead-card.edge-red{ border-left-color:var(--red-dot); }
+
+  .icon-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:2.25rem;
+    height:2.25rem;
+    border-radius:0.625rem;
+    background:#fbfaf7;
+    border:1px solid var(--line);
+    flex-shrink:0;
+  }
+
+  /* Modal update status */
+  #modalOverlay{ transition:opacity 0.2s ease; }
+  #modalBox{ transition:opacity 0.2s ease, transform 0.2s ease; }
+  .modal-input{
+    width:100%;
+    background:#fbfaf7;
+    border:1px solid var(--line);
+    border-radius:0.5rem;
+    padding:0.625rem 0.75rem;
+    font-size:0.9375rem;
+    color:var(--ink);
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .modal-input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:#ffffff;
+    box-shadow:0 0 0 3px rgba(15,107,76,0.12);
+  }
+
+  /* Login */
+  .login-wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .login-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:1rem;
+    width:100%;
+    max-width:23rem;
+  }
+
+  /* Notifikasi: bell, badge, dropdown riwayat, toast in-app */
+  .notif-btn{ position:relative; display:flex; align-items:center; }
+  .notif-badge{
+    position:absolute;
+    top:-0.3rem;
+    right:-0.3rem;
+    min-width:1.1rem;
+    height:1.1rem;
+    padding:0 0.25rem;
+    border-radius:999px;
+    background:var(--red-dot);
+    color:#fff;
+    font-size:0.6875rem;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
+    box-shadow:0 0 0 2px var(--green-dark);
+  }
+  .notif-badge.hidden{ display:none !important; }
+
+  .notif-dropdown{
+    position:absolute;
+    top:calc(100% + 0.5rem);
+    right:0;
+    width:20rem;
+    max-width:88vw;
+    max-height:22rem;
+    overflow-y:auto;
+    background:#ffffff;
+    border:1px solid var(--line);
+    border-radius:0.875rem;
+    box-shadow:0 10px 30px rgba(22,36,29,0.18);
+    z-index:40;
+    color:var(--ink);
+  }
+  .notif-item{
+    padding:0.75rem 1rem;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+  .notif-item:hover{ background:#faf9f5; }
+  .notif-item:last-child{ border-bottom:none; }
+  .notif-dot{
+    width:0.5rem;
+    height:0.5rem;
+    border-radius:999px;
+    flex-shrink:0;
+    margin-top:0.35rem;
+  }
+  .notif-dot.new{ background:var(--green); }
+  .notif-dot.followup{ background:var(--red-dot); }
+
+  /* Toast stack notifikasi real-time (pojok atas layar) */
+  #toastStack{
+    position:fixed;
+    top:1rem;
+    right:1rem;
+    left:1rem;
+    z-index:60;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:0.6rem;
+    pointer-events:none;
+  }
+  @media (min-width:640px){
+    #toastStack{ left:auto; width:22rem; }
+  }
+  .app-toast{
+    pointer-events:auto;
+    width:100%;
+    max-width:22rem;
+    background:#ffffff;
+    border:1px solid var(--line);
+    border-left-width:4px;
+    border-radius:0.75rem;
+    box-shadow:0 10px 25px rgba(22,36,29,0.18);
+    padding:0.75rem 0.9rem;
+    opacity:0;
+    transform:translateY(-8px);
+    transition:opacity 0.2s ease, transform 0.2s ease;
+    cursor:pointer;
+  }
+  .app-toast.show{ opacity:1; transform:translateY(0); }
+  .app-toast.edge-new{ border-left-color:var(--green); }
+  .app-toast.edge-followup{ border-left-color:var(--red-dot); }
+</style>
+</head>
+<body class="min-h-screen">
+
+  <!-- ============================================================ -->
+  <!-- LOGIN VIEW                                                    -->
+  <!-- ============================================================ -->
+  <div id="loginView" class="login-wrap px-4">
+    <div class="login-card p-6 sm:p-8">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="brand-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M4 11.5L12 4l8 7.5" stroke="#f6f4ef" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" stroke="#f6f4ef" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 20v-5h4v5" stroke="#f6f4ef" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-base leading-tight">Podorukun Lead Tracker</h1>
+          <p class="text-xs text-[#5c6b62] leading-tight">Masuk ke akun Anda</p>
+        </div>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="field-label" for="loginEmail">Email</label>
+          <input required id="loginEmail" type="email" autocomplete="username" placeholder="nama@podorukun.co.id" class="field-input">
+        </div>
+        <div>
+          <label class="field-label" for="loginPassword">Password</label>
+          <input required id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" class="field-input">
+        </div>
+
+        <p id="loginError" class="hidden text-sm text-[var(--red)] bg-[var(--red-bg)] rounded-lg px-3 py-2"></p>
+
+        <button type="submit" id="loginSubmitBtn" class="btn-primary text-white font-semibold text-sm w-full py-2.5 rounded-lg">
+          Masuk
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- CS / ADMIN VIEW                                               -->
+  <!-- ============================================================ -->
+  <div id="csView" class="hidden">
+    <header class="bg-[var(--green-dark)]">
+      <div class="max-w-6xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="brand-mark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M4 11.5L12 4l8 7.5" stroke="#f6f4ef" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" stroke="#f6f4ef" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 20v-5h4v5" stroke="#f6f4ef" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h1 id="csHeaderTitle" class="text-white font-bold text-base sm:text-lg leading-tight">Podorukun Lead Tracker - Panel CS</h1>
+            <p id="csHeaderSubtitle" class="text-[#bcd6c9] text-xs sm:text-sm leading-tight">Panel CS</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="hidden sm:inline-flex status-pill">Sesi Aktif</span>
+
+          <button type="button" onclick="triggerTestNotification()" class="btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg" title="Simulasikan notifikasi baru untuk uji coba badge/toast/dropdown">
+            Test Kirim Notif
+          </button>
+
+          <div class="notif-btn">
+            <button type="button" onclick="toggleNotifDropdown('cs')" class="icon-btn" style="background:transparent;border-color:rgba(255,255,255,0.35);" aria-label="Notifikasi">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 16v-5a6 6 0 0 0-5-5.92V4a1 1 0 1 0-2 0v1.08A6 6 0 0 0 6 11v5l-1.6 2.13A1 1 0 0 0 5.2 20h13.6a1 1 0 0 0 .8-1.87L18 16Z" stroke="#f6f4ef" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="#f6f4ef" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+            <span id="csNotifBadge" class="notif-badge hidden">0</span>
+            <div id="csNotifDropdown" class="notif-dropdown hidden">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-[var(--line)]">
+                <span class="font-bold text-sm">Notifikasi</span>
+                <button type="button" id="csNotifPermBtn" onclick="requestNotifPermission()" class="text-xs font-semibold text-[var(--green-dark)] hidden">Aktifkan Push</button>
+              </div>
+              <div id="csNotifList"><p class="text-sm text-[#5c6b62] px-4 py-6 text-center">Belum ada notifikasi.</p></div>
+            </div>
+          </div>
+
+          <button type="button" onclick="handleLogout()" class="btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-5 sm:px-8 py-8 space-y-8">
+
+      <!-- Input Lead Baru - hanya untuk role CS, disembunyikan untuk Admin/SPV -->
+      <section id="csInputSection" class="bg-[var(--card)] border border-[var(--line)] rounded-2xl p-5 sm:p-7">
+        <div class="mb-5">
+          <h2 class="text-lg font-bold">Input Lead Baru</h2>
+          <p class="text-sm text-[#5c6b62] mt-0.5">Catat data calon buyer dari WhatsApp, DM, atau telepon masuk.</p>
+        </div>
+
+        <form id="leadForm" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          <div>
+            <label class="field-label" for="buyerName">Nama Calon Buyer</label>
+            <input required id="buyerName" name="buyerName" type="text" placeholder="Contoh: Rina Kartika" class="field-input">
+          </div>
+
+          <div>
+            <label class="field-label" for="waNumber">Nomor WhatsApp</label>
+            <input required id="waNumber" name="waNumber" type="tel" placeholder="Contoh: 0812xxxxxxx" class="field-input">
+          </div>
+
+          <div>
+            <label class="field-label" for="adSource">Sumber Iklan</label>
+            <select required id="adSource" name="adSource" class="field-input">
+              <option value="" disabled selected>Pilih sumber iklan</option>
+              <option value="Meta Ads">Meta Ads</option>
+              <option value="Google Ads">Google Ads</option>
+              <option value="IG DM">IG DM</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="field-label" for="project">Proyek yang Diminati</label>
+            <select required id="project" name="project" class="field-input">
+              <option value="" disabled selected>Pilih proyek</option>
+              <option value="Pacific Hills">Pacific Hills</option>
+              <option value="Green Amalia">Green Amalia</option>
+              <option value="Griya Adhinata">Griya Adhinata</option>
+              <option value="The Sultan">The Sultan</option>
+              <option value="Naomy Residence">Naomy Residence</option>
+              <option value="New Alam Mojosari">New Alam Mojosari</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2 md:max-w-xs">
+            <label class="field-label" for="assignedTo">Tugaskan ke Marketing</label>
+            <select required id="assignedTo" name="assignedTo" class="field-input">
+              <option value="" disabled selected>Pilih marketing</option>
+              <option value="Haris">Haris</option>
+              <option value="Nina">Nina</option>
+              <option value="Rizky">Rizky</option>
+              <option value="Abid">Abid</option>
+              <option value="Maulana">Maulana</option>
+              <option value="Nanda">Nanda</option>
+              <option value="Nur">Nur</option>
+              <option value="Eko">Eko</option>
+              <option value="Ferdi">Ferdi</option>
+              <option value="Reza">Reza</option>
+              <option value="Ratna">Ratna</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2 flex items-center gap-4 pt-1">
+            <button type="submit" class="btn-primary text-white font-semibold text-sm px-6 py-2.5 rounded-lg">
+              Submit Lead
+            </button>
+            <span id="leadToast" class="opacity-0 text-sm font-medium text-[var(--green-dark)]" style="transition:opacity 0.25s ease;">Lead berhasil ditambahkan.</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- Pantauan Semua Lead (Global) - Dashboard Grid -->
+      <section>
+        <div class="mb-1">
+          <h2 class="text-lg font-bold">Pantauan Semua Lead (Global)</h2>
+          <p class="text-sm text-[#5c6b62] mt-0.5">Kinerja tiap marketing, untuk memantau batas waktu follow-up 3 hari.</p>
+        </div>
+
+        <!-- Mode 1: Grid kartu ringkasan per marketing (di-generate JS dari data real-time Firestore) -->
+        <div id="marketingGridView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          <p id="marketingGridEmpty" class="text-sm text-[#5c6b62] sm:col-span-2 lg:col-span-3">Memuat data lead...</p>
+        </div>
+
+        <!-- Mode 2: Tabel detail lead per marketing -->
+        <div id="marketingDetailView" class="hidden mt-4">
+          <button type="button" onclick="showMarketingGrid()" class="cancel-btn font-semibold text-sm px-4 py-2 rounded-lg">
+            &#11013; Kembali ke Daftar Marketing
+          </button>
+          <h3 id="detailTitle" class="text-lg font-bold mt-4 mb-3">Detail Lead: -</h3>
+
+          <div class="bg-[var(--card)] border border-[var(--line)] rounded-xl overflow-x-auto">
+            <table class="w-full min-w-[520px] border-collapse">
+              <thead>
+                <tr class="border-b border-[var(--line)]">
+                  <th class="px-4 sm:px-5 py-3">Tanggal</th>
+                  <th class="px-4 sm:px-5 py-3">Nama</th>
+                  <th class="px-4 sm:px-5 py-3">Proyek</th>
+                  <th class="px-4 sm:px-5 py-3">Follow-Up Berikutnya</th>
+                  <th class="px-4 sm:px-5 py-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="detailTableBody" class="divide-y divide-[var(--line)]"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MARKETING VIEW                                                -->
+  <!-- ============================================================ -->
+  <div id="marketingView" class="hidden min-h-screen pb-10">
+    <header class="bg-[var(--green-dark)] sticky top-0 z-10">
+      <div class="px-4 py-4 flex items-center justify-between">
+        <div>
+          <h1 class="text-white font-bold text-base leading-tight">Podorukun Lead Tracker</h1>
+          <p class="text-[#bcd6c9] text-xs leading-tight">Panel Marketing</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="notif-btn">
+            <button type="button" onclick="toggleNotifDropdown('marketing')" class="icon-btn" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.35);" aria-label="Notifikasi">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 16v-5a6 6 0 0 0-5-5.92V4a1 1 0 1 0-2 0v1.08A6 6 0 0 0 6 11v5l-1.6 2.13A1 1 0 0 0 5.2 20h13.6a1 1 0 0 0 .8-1.87L18 16Z" stroke="#f6f4ef" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="#f6f4ef" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+            <span id="marketingNotifBadge" class="notif-badge hidden">0</span>
+            <div id="marketingNotifDropdown" class="notif-dropdown hidden">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-[var(--line)]">
+                <span class="font-bold text-sm">Notifikasi</span>
+                <button type="button" id="marketingNotifPermBtn" onclick="requestNotifPermission()" class="text-xs font-semibold text-[var(--green-dark)] hidden">Aktifkan Push</button>
+              </div>
+              <div id="marketingNotifList"><p class="text-sm text-[#5c6b62] px-4 py-6 text-center">Belum ada notifikasi.</p></div>
+            </div>
+          </div>
+          <div id="marketingAvatar" class="w-9 h-9 rounded-full bg-[#1a8a63] flex items-center justify-center text-white text-sm font-bold">M</div>
+          <button type="button" onclick="handleLogout()" class="btn-ghost text-xs font-semibold px-3 py-2 rounded-lg">Logout</button>
+        </div>
+      </div>
+      <div class="px-4 pb-4">
+        <p id="marketingGreeting" class="text-white text-lg font-bold">Halo, Marketing</p>
+        <p class="text-[#bcd6c9] text-xs mt-0.5">Kamu punya <span id="leadTotal" class="font-semibold text-white">3</span> lead yang perlu ditindaklanjuti</p>
+      </div>
+    </header>
+
+    <main class="px-4 pt-5 space-y-4 max-w-md mx-auto">
+      <!-- Kartu lead marketing di-generate JS secara real-time dari Firestore (koleksi 'leads', where assignedTo == nama marketing) -->
+      <div id="marketingCardsContainer" class="space-y-4">
+        <p id="marketingCardsEmpty" class="text-sm text-[#5c6b62] text-center py-8">Memuat data lead...</p>
+      </div>
+    </main>
+
+    <!-- Modal Update Status Lead -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-20 hidden items-center justify-center px-4" onclick="closeModal()">
+      <div id="modalBox" class="bg-white rounded-2xl p-5 w-full max-w-sm opacity-0 scale-95" onclick="event.stopPropagation()">
+        <h3 class="font-bold text-lg mb-1">Update Status Lead</h3>
+        <p id="modalLeadName" class="text-sm text-[#5c6b62] mb-4">Nama Lead: Dewi Anggraini</p>
+
+        <label class="field-label" for="statusSelect">Status Baru</label>
+        <select id="statusSelect" class="modal-input mb-4">
+          <option value="Follow-Up 1">Follow-Up 1</option>
+          <option value="Follow-Up 2">Follow-Up 2</option>
+          <option value="Follow-Up 3">Follow-Up 3</option>
+          <option value="Site Visit">Site Visit</option>
+          <option value="Closed (Deal)">Closed (Deal)</option>
+          <option value="Lost (Batal)">Lost (Batal)</option>
+        </select>
+
+        <label class="field-label" for="nextFollowUpDate">Jadwal Follow-Up Berikutnya</label>
+        <input type="date" id="nextFollowUpDate" class="modal-input mb-4">
+
+        <label class="field-label" for="followUpNote">Catatan Follow-Up</label>
+        <textarea id="followUpNote" rows="3" placeholder="Tulis hasil percakapan dengan lead..." class="modal-input mb-5 resize-none"></textarea>
+
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="closeModal()" class="cancel-btn font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">
+            Batal
+          </button>
+          <button type="button" onclick="saveUpdate()" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">
+            Simpan Update
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL DETAIL LEAD (read-only + riwayat follow-up)             -->
+  <!-- Diletakkan di luar csView/marketingView agar bisa dipakai     -->
+  <!-- oleh Panel CS/Admin maupun Panel Marketing.                   -->
+  <!-- ============================================================ -->
+  <div id="detailModalOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-30 hidden items-center justify-center px-4" onclick="closeDetailModal()">
+    <div id="detailModalBox" class="bg-white rounded-2xl p-5 w-full max-w-md opacity-0 scale-95 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <h3 id="detailModalName" class="font-bold text-lg">Nama Lead</h3>
+          <p id="detailModalProject" class="text-sm text-[#5c6b62] mt-0.5">Proyek</p>
+        </div>
+        <span id="detailModalStatus" class="sla-pill sla-green whitespace-nowrap">Status</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
+        <div>
+          <p class="text-xs text-[#5c6b62]">No. WhatsApp</p>
+          <p id="detailModalWa" class="font-medium">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-[#5c6b62]">Sumber Iklan</p>
+          <p id="detailModalSource" class="font-medium">-</p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-xs text-[#5c6b62]">Jadwal Follow-Up Berikutnya</p>
+          <p id="detailModalFollowUp" class="font-medium">-</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 mb-5">
+        <a id="detailModalWaLink" href="#" target="_blank" rel="noopener" class="icon-btn" aria-label="Chat WhatsApp">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="#1f8a5c"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.5-.3Z"/></svg>
+        </a>
+        <button type="button" id="detailModalUpdateBtn" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1" onclick="openUpdateFromDetail()">
+          Update Status
+        </button>
+      </div>
+
+      <h4 class="font-bold text-sm mb-2">Riwayat Follow-Up</h4>
+      <div id="detailModalHistory" class="space-y-0">
+        <p class="text-sm text-[#5c6b62]">Belum ada riwayat update.</p>
+      </div>
+
+      <div class="mt-5">
+        <button type="button" onclick="closeDetailModal()" class="cancel-btn font-semibold text-sm px-4 py-2.5 rounded-lg w-full">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stack toast notifikasi in-app real-time (lead baru / follow-up jatuh tempo) -->
+  <div id="toastStack"></div>
+
+  <!-- ============================================================ -->
+  <!-- FIREBASE (compat SDK, murni via CDN)                          -->
+  <!-- ============================================================ -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ------------------------------------------------------------
+    // Inisialisasi Firebase (SDK compat, sesuai tag CDN di atas)
+    // ------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnaMEid426ArBFrb1NlpPaHNxWseyIoRc",
+      authDomain: "crm-prjp.firebaseapp.com",
+      projectId: "crm-prjp",
+      storageBucket: "crm-prjp.firebasestorage.app",
+      messagingSenderId: "500012126981",
+      appId: "1:500012126981:web:4023581801db76f4901d6c"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const FieldValue = firebase.firestore.FieldValue;
+
+    // ------------------------------------------------------------
+    // Routing antar view
+    // ------------------------------------------------------------
+    const views = {
+      login: document.getElementById('loginView'),
+      cs: document.getElementById('csView'),
+      marketing: document.getElementById('marketingView')
+    };
+
+    function showView(name) {
+      Object.values(views).forEach(v => v.classList.add('hidden'));
+      views[name].classList.remove('hidden');
+    }
+
+    // ------------------------------------------------------------
+    // State aplikasi
+    // ------------------------------------------------------------
+    let currentUser = null;          // { uid, email, role, name }
+    let unsubscribeLeads = null;     // handle onSnapshot aktif (CS/Admin atau Marketing)
+    let allLeadsData = [];           // dipakai role CS/Admin (semua lead)
+    let marketingLeadsData = [];     // dipakai role Marketing (lead miliknya saja)
+    let currentDetailMarketing = null;
+    let currentModalLeadId = null;
+    let currentDetailLeadId = null;
+
+    const ICON_PHONE = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6.6 10.8c1.4 2.7 3.6 4.9 6.3 6.3l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.9 21 3 13.1 3 3.5c0-.6.4-1 1-1h3.6c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1L6.6 10.8Z" stroke="#16241d" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+    const ICON_SOURCE = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-3-8-8-3Z" stroke="#5c6b62" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+    const ICON_WA = '<svg width="17" height="17" viewBox="0 0 24 24" fill="#1f8a5c"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.5-.3Z"/></svg>';
+
+    const CLOSED_STATUSES = ['Closed (Deal)', 'Lost (Batal)'];
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function toJsDate(ts) {
+      if (!ts) return new Date();
+      if (typeof ts.toDate === 'function') return ts.toDate();
+      if (ts instanceof Date) return ts;
+      return new Date(ts);
+    }
+
+    function formatDateID(date) {
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      return dd + '/' + mm + '/' + yyyy;
+    }
+
+    function daysSince(date) {
+      const ms = Date.now() - date.getTime();
+      return ms / (1000 * 60 * 60 * 24);
+    }
+
+    // Selisih hari antar 2 tanggal (mengabaikan jam/menit), a - b, dibulatkan.
+    function daysDiffDateOnly(a, b) {
+      const da = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+      const dbb = new Date(b.getFullYear(), b.getMonth(), b.getDate());
+      return Math.round((da - dbb) / (1000 * 60 * 60 * 24));
+    }
+
+    // Default jadwal follow-up berikutnya: 3 hari dari sekarang.
+    function defaultNextFollowUp() {
+      const d = new Date();
+      d.setDate(d.getDate() + 3);
+      return d;
+    }
+
+    // Format Date -> value untuk <input type="date"> (yyyy-mm-dd).
+    function toDateInputValue(date) {
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      return yyyy + '-' + mm + '-' + dd;
+    }
+
+    // Parse value <input type="date"> (yyyy-mm-dd) -> Date lokal jam 00:00.
+    function fromDateInputValue(value) {
+      if (!value) return defaultNextFollowUp();
+      const parts = value.split('-');
+      return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    }
+
+    // SLA: dihitung dari nextFollowUpDate (jadwal follow-up berikutnya yang dipilih marketing/CS).
+    // Lead yang sudah Closed/Lost selalu hijau.
+    function computeSla(lead) {
+      if (CLOSED_STATUSES.indexOf(lead.status) !== -1) return 'green';
+      const follow = toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt);
+      const diff = daysDiffDateOnly(follow, new Date());
+      if (diff > 1) return 'green';   // masih > 1 hari lagi
+      if (diff >= 0) return 'amber';  // jadwal hari ini atau besok
+      return 'red';                   // sudah lewat jadwal follow-up
+    }
+
+    function slaCaption(lead) {
+      if (CLOSED_STATUSES.indexOf(lead.status) !== -1) {
+        return lead.status === 'Closed (Deal)' ? 'Deal sudah closing' : 'Lead ditandai batal';
+      }
+      const follow = toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt);
+      const tgl = formatDateID(follow);
+      const diff = daysDiffDateOnly(follow, new Date());
+      if (diff > 1) return 'Jadwal follow-up berikutnya: ' + tgl + ' &ndash; masih ' + diff + ' hari lagi';
+      if (diff === 1) return 'Jadwal follow-up besok, ' + tgl;
+      if (diff === 0) return 'Jadwal follow-up hari ini, ' + tgl;
+      return 'Lewat jadwal follow-up ' + Math.abs(diff) + ' hari (' + tgl + ') &ndash; wajib follow-up sekarang';
+    }
+
+    function waLink(number) {
+      let digits = String(number || '').replace(/\D/g, '');
+      if (digits.startsWith('0')) digits = '62' + digits.slice(1);
+      else if (!digits.startsWith('62')) digits = '62' + digits;
+      return 'https://wa.me/' + digits;
+    }
+
+    // Cari data lead di kedua sumber (Panel Marketing atau Panel CS/Admin), mana pun yang sedang aktif.
+    function findLeadById(leadId) {
+      return marketingLeadsData.find(function (l) { return l.id === leadId; }) ||
+        allLeadsData.find(function (l) { return l.id === leadId; }) ||
+        null;
+    }
+
+    // Render riwayat catatan (array 'notes') secara kronologis (dari yang terlama ke terbaru).
+    function renderHistoryList(lead) {
+      const notes = Array.isArray(lead.notes) ? lead.notes.slice() : [];
+      if (!notes.length) {
+        return '<p class="text-sm text-[#5c6b62]">Belum ada riwayat update.</p>';
+      }
+      notes.sort(function (a, b) { return toJsDate(a.date) - toJsDate(b.date); });
+      return notes.map(function (n) {
+        const tgl = formatDateID(toJsDate(n.date));
+        const noteText = n.note
+          ? '<p class="text-sm text-[var(--ink)] mt-1">' + escapeHtml(n.note) + '</p>'
+          : '<p class="text-sm text-[#9aa79f] italic mt-1">Tanpa catatan tambahan</p>';
+        return '<div class="border-b border-[var(--line)] pb-3 mb-3 last:border-b-0 last:mb-0 last:pb-0">' +
+          '<div class="flex items-center justify-between gap-2 flex-wrap">' +
+            '<span class="status-pill">' + escapeHtml(n.status) + '</span>' +
+            '<span class="text-xs text-[#5c6b62]">' + tgl + '</span>' +
+          '</div>' +
+          noteText +
+        '</div>';
+      }).join('');
+    }
+
+    // ------------------------------------------------------------
+    // Notifikasi: badge real-time, toast in-app, dropdown riwayat,
+    // dan browser push notification (Web Notification API).
+    //
+    // Catatan implementasi: untuk push notification, dipakai
+    // Notification API bawaan browser (Notification.requestPermission())
+    // sebagai pengganti FCM penuh. FCM asli membutuhkan service worker
+    // terpisah + VAPID key di sisi server, yang berada di luar cakupan
+    // satu file index.html statis ini. Pendekatan ini tetap memunculkan
+    // pop-up notifikasi native di perangkat marketing/SPV saat tab
+    // aplikasi terbuka.
+    // ------------------------------------------------------------
+    const notificationLog = []; // riwayat notifikasi in-memory (maks 20 terbaru)
+    let notifIdCounter = 0;
+
+    const notifState = {
+      csAdmin: { knownIds: new Set(), knownAttentionIds: new Set(), initial: true },
+      marketing: { knownIds: new Set(), knownAttentionIds: new Set(), initial: true }
+    };
+
+    function resetNotifState(scope) {
+      notifState[scope] = { knownIds: new Set(), knownAttentionIds: new Set(), initial: true };
+    }
+
+    // Lead dianggap "butuh perhatian" jika: baru masuk (belum pernah di-follow-up),
+    // atau jadwal follow-up berikutnya sudah tiba hari ini / sudah lewat.
+    function needsAttentionNow(lead) {
+      if (CLOSED_STATUSES.indexOf(lead.status) !== -1) return false;
+      if (lead.status === 'New') return true;
+      const follow = toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt);
+      return daysDiffDateOnly(follow, new Date()) <= 0;
+    }
+
+    // Badge angka merah di ikon lonceng: jumlah lead yang butuh perhatian saat ini.
+    function updateNotifBadge(scope, leads) {
+      const badge = document.getElementById(scope === 'csAdmin' ? 'csNotifBadge' : 'marketingNotifBadge');
+      if (!badge) return;
+      const count = leads.filter(needsAttentionNow).length;
+      if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // Naikkan angka badge +1 secara langsung (dipakai oleh tombol "Test Kirim Notif").
+    // Terpisah dari updateNotifBadge karena ini bukan hasil hitung ulang dari data
+    // Firestore asli, melainkan simulasi manual real-time. Snapshot berikutnya dari
+    // Firestore akan tetap menghitung ulang badge sesuai data lead yang sebenarnya.
+    function bumpNotifBadge(scope) {
+      const badge = document.getElementById(scope === 'csAdmin' ? 'csNotifBadge' : 'marketingNotifBadge');
+      if (!badge) return;
+      const current = badge.classList.contains('hidden') ? 0 : (parseInt(badge.textContent, 10) || 0);
+      const next = current + 1;
+      badge.textContent = next > 99 ? '99+' : String(next);
+      badge.classList.remove('hidden');
+    }
+
+    // ------------------------------------------------------------
+    // Tombol "Test Kirim Notif" (Panel CS/SPV): mensimulasikan
+    // notifikasi lead baru / pengingat follow-up tanpa menulis apa
+    // pun ke Firestore dan tanpa menunggu jadwal 3 hari. Langsung
+    // memicu badge, toast, dropdown, dan (jika diizinkan) push
+    // notification browser, persis seperti event real-time asli.
+    // ------------------------------------------------------------
+    function triggerTestNotification() {
+      const variants = [
+        { type: 'new', title: 'Lead baru masuk', message: 'Lead Uji Coba \u2013 Simulasi Testing' },
+        { type: 'followup', title: 'Jadwal follow-up jatuh tempo', message: 'Lead Uji Coba \u2013 Pengingat follow-up hari ini' }
+      ];
+      const pick = variants[Math.floor(Math.random() * variants.length)];
+      addNotification('csAdmin', pick.type, pick.title, pick.message, null);
+      bumpNotifBadge('csAdmin');
+    }
+
+    // Bandingkan snapshot lama vs baru untuk mendeteksi (a) lead baru masuk, dan
+    // (b) lead yang baru saja memasuki status "jatuh tempo follow-up", lalu picu
+    // toast in-app + browser push notification. Snapshot pertama (initial load)
+    // tidak memicu notifikasi supaya tidak "membanjiri" saat baru login/refresh.
+    function processRealtimeNotifications(scope, leads) {
+      const state = notifState[scope];
+      const currentIds = new Set(leads.map(function (l) { return l.id; }));
+      const currentAttention = new Set(leads.filter(needsAttentionNow).map(function (l) { return l.id; }));
+
+      if (state.initial) {
+        state.knownIds = currentIds;
+        state.knownAttentionIds = currentAttention;
+        state.initial = false;
+        return;
+      }
+
+      const justNotifiedIds = [];
+
+      leads.forEach(function (lead) {
+        if (!state.knownIds.has(lead.id)) {
+          const title = scope === 'marketing' ? 'Lead baru untuk kamu' : 'Lead baru masuk';
+          const msg = lead.buyerName + ' \u2013 ' + lead.project;
+          addNotification(scope, 'new', title, msg, lead.id);
+          justNotifiedIds.push(lead.id);
+        }
+      });
+
+      const newDue = leads.filter(function (lead) {
+        return currentAttention.has(lead.id) && !state.knownAttentionIds.has(lead.id) && justNotifiedIds.indexOf(lead.id) === -1;
+      });
+
+      if (newDue.length === 1) {
+        addNotification(scope, 'followup', 'Jadwal follow-up jatuh tempo', newDue[0].buyerName + ' \u2013 ' + newDue[0].project, newDue[0].id);
+      } else if (newDue.length > 1) {
+        addNotification(scope, 'followup', 'Follow-up jatuh tempo', newDue.length + ' lead perlu ditindaklanjuti hari ini', null);
+      }
+
+      state.knownIds = currentIds;
+      state.knownAttentionIds = currentAttention;
+    }
+
+    function addNotification(scope, type, title, message, leadId) {
+      notifIdCounter += 1;
+      notificationLog.unshift({ id: notifIdCounter, type: type, title: title, message: message, leadId: leadId, time: new Date() });
+      if (notificationLog.length > 20) notificationLog.length = 20;
+      renderNotifDropdown('cs');
+      renderNotifDropdown('marketing');
+      pushToast({ type: type, title: title, message: message, leadId: leadId });
+      sendBrowserNotification(title, message);
+    }
+
+    function renderNotifDropdown(prefix) {
+      const list = document.getElementById(prefix + 'NotifList');
+      if (!list) return;
+      if (!notificationLog.length) {
+        list.innerHTML = '<p class="text-sm text-[#5c6b62] px-4 py-6 text-center">Belum ada notifikasi.</p>';
+        return;
+      }
+      list.innerHTML = notificationLog.map(function (n) {
+        const jam = String(n.time.getHours()).padStart(2, '0') + ':' + String(n.time.getMinutes()).padStart(2, '0');
+        return '<div class="notif-item flex items-start gap-2.5" onclick="handleNotifClick(\'' + prefix + '\',' + n.id + ')">' +
+          '<span class="notif-dot ' + n.type + '"></span>' +
+          '<div class="flex-1 min-w-0">' +
+            '<p class="text-sm font-semibold leading-tight">' + escapeHtml(n.title) + '</p>' +
+            '<p class="text-xs text-[#5c6b62] mt-0.5 leading-snug">' + escapeHtml(n.message) + '</p>' +
+            '<p class="text-[11px] text-[#9aa79f] mt-1">' + jam + '</p>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function handleNotifClick(prefix, notifId) {
+      const entry = notificationLog.find(function (n) { return n.id === notifId; });
+      closeNotifDropdown(prefix);
+      if (entry && entry.leadId && findLeadById(entry.leadId)) {
+        openDetailModal(entry.leadId);
+      }
+    }
+
+    function toggleNotifDropdown(prefix) {
+      const dd = document.getElementById(prefix + 'NotifDropdown');
+      if (!dd) return;
+      const isHidden = dd.classList.contains('hidden');
+      closeNotifDropdown('cs');
+      closeNotifDropdown('marketing');
+      if (isHidden) {
+        dd.classList.remove('hidden');
+        const permBtn = document.getElementById(prefix + 'NotifPermBtn');
+        if (permBtn) {
+          const alreadyGranted = ('Notification' in window) && Notification.permission === 'granted';
+          permBtn.classList.toggle('hidden', !('Notification' in window) || alreadyGranted);
+        }
+      }
+    }
+
+    function closeNotifDropdown(prefix) {
+      const dd = document.getElementById(prefix + 'NotifDropdown');
+      if (dd) dd.classList.add('hidden');
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.notif-btn')) {
+        closeNotifDropdown('cs');
+        closeNotifDropdown('marketing');
+      }
+    });
+
+    // ------------------------------------------------------------
+    // Toast in-app: muncul di pojok atas layar setiap kali ada event
+    // real-time baru (lead baru / follow-up jatuh tempo), lepas dari
+    // dropdown riwayat notifikasi.
+    // ------------------------------------------------------------
+    function pushToast(entry) {
+      const stack = document.getElementById('toastStack');
+      if (!stack) return;
+      const el = document.createElement('div');
+      el.className = 'app-toast edge-' + entry.type;
+      el.innerHTML = '<p class="text-sm font-bold">' + escapeHtml(entry.title) + '</p>' +
+        '<p class="text-xs text-[#5c6b62] mt-0.5">' + escapeHtml(entry.message) + '</p>';
+      el.addEventListener('click', function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+        if (entry.leadId && findLeadById(entry.leadId)) openDetailModal(entry.leadId);
+      });
+      stack.appendChild(el);
+      requestAnimationFrame(function () { el.classList.add('show'); });
+      setTimeout(function () {
+        el.classList.remove('show');
+        setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 250);
+      }, 6000);
+    }
+
+    // ------------------------------------------------------------
+    // Browser push notification (Web Notification API).
+    // ------------------------------------------------------------
+    function maybeRequestNotifPermission() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().catch(function () {});
+      }
+    }
+
+    function requestNotifPermission() {
+      if (!('Notification' in window)) {
+        alert('Browser ini tidak mendukung notifikasi push.');
+        return;
+      }
+      Notification.requestPermission().then(function (perm) {
+        if (perm === 'granted') {
+          new Notification('Notifikasi aktif', { body: 'Kamu akan menerima notifikasi lead baru & follow-up di sini.' });
+        }
+        const csBtn = document.getElementById('csNotifPermBtn');
+        const mBtn = document.getElementById('marketingNotifPermBtn');
+        if (csBtn) csBtn.classList.toggle('hidden', perm === 'granted');
+        if (mBtn) mBtn.classList.toggle('hidden', perm === 'granted');
+      });
+    }
+
+    function sendBrowserNotification(title, body) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      try {
+        const n = new Notification(title, { body: body, tag: 'podorukun-lead-' + Date.now() });
+        n.onclick = function () { window.focus(); n.close(); };
+      } catch (err) {
+        console.warn('Gagal menampilkan browser notification:', err);
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Login form
+    // ------------------------------------------------------------
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      loginError.classList.add('hidden');
+      loginSubmitBtn.disabled = true;
+      loginSubmitBtn.textContent = 'Memproses...';
+
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(function (err) {
+          loginError.textContent = 'Login gagal: email atau password salah.';
+          loginError.classList.remove('hidden');
+        })
+        .finally(function () {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.textContent = 'Masuk';
+        });
+      // onAuthStateChanged di bawah yang akan menangani routing setelah login sukses.
+    });
+
+    // ------------------------------------------------------------
+    // Cek status login + ambil role dari koleksi Firestore 'users'
+    // ------------------------------------------------------------
+    auth.onAuthStateChanged(function (user) {
+      if (!user) {
+        cleanupLeadsListener();
+        currentUser = null;
+        showView('login');
+        loginForm.reset();
+        return;
+      }
+
+      // Struktur dokumen yang diharapkan di 'users/{uid}': { role: 'CS' | 'Marketing' | 'Admin', name: 'Budi' }
+      db.collection('users').doc(user.uid).get()
+        .then(function (docSnap) {
+          if (!docSnap.exists) {
+            loginError.textContent = 'Akun ini belum terdaftar dengan role. Hubungi admin.';
+            loginError.classList.remove('hidden');
+            auth.signOut();
+            return;
+          }
+          const profile = docSnap.data();
+          currentUser = {
+            uid: user.uid,
+            email: user.email,
+            role: profile.role,
+            name: profile.name || user.email
+          };
+          routeToRole(currentUser.role, currentUser.name);
+        })
+        .catch(function (err) {
+          loginError.textContent = 'Gagal mengambil data role: ' + err.message;
+          loginError.classList.remove('hidden');
+          auth.signOut();
+        });
+    });
+
+    function routeToRole(role, displayName) {
+      maybeRequestNotifPermission();
+      if (role === 'CS') {
+        document.getElementById('csHeaderTitle').textContent = 'Podorukun Lead Tracker - Panel CS';
+        document.getElementById('csHeaderSubtitle').textContent = 'Panel CS';
+        document.getElementById('csInputSection').classList.remove('hidden');
+        showView('cs');
+        startLeadsListenerCsAdmin();
+      } else if (role === 'Admin') {
+        // SPV/Manager: pakai UI Panel CS yang sama, tapi hanya memantau (tanpa form input lead).
+        document.getElementById('csHeaderTitle').textContent = 'Podorukun Lead Tracker - Panel SPV/Manager';
+        document.getElementById('csHeaderSubtitle').textContent = 'Monitoring';
+        document.getElementById('csInputSection').classList.add('hidden');
+        showView('cs');
+        startLeadsListenerCsAdmin();
+      } else if (role === 'Marketing') {
+        document.getElementById('marketingGreeting').textContent = 'Halo, ' + displayName;
+        const initial = (displayName || 'M').trim().charAt(0).toUpperCase();
+        document.getElementById('marketingAvatar').textContent = initial;
+        showView('marketing');
+        startLeadsListenerMarketing(displayName);
+      } else {
+        loginError.textContent = 'Role tidak dikenali: ' + role;
+        loginError.classList.remove('hidden');
+        auth.signOut();
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Logout
+    // ------------------------------------------------------------
+    function handleLogout() {
+      auth.signOut();
+    }
+
+    function cleanupLeadsListener() {
+      if (typeof unsubscribeLeads === 'function') {
+        unsubscribeLeads();
+        unsubscribeLeads = null;
+      }
+      allLeadsData = [];
+      marketingLeadsData = [];
+      currentDetailMarketing = null;
+
+      // Reset notifikasi (badge, dropdown, riwayat) supaya tidak "bocor" antar sesi login.
+      resetNotifState('csAdmin');
+      resetNotifState('marketing');
+      notificationLog.length = 0;
+      renderNotifDropdown('cs');
+      renderNotifDropdown('marketing');
+      const csBadge = document.getElementById('csNotifBadge');
+      const mBadge = document.getElementById('marketingNotifBadge');
+      if (csBadge) csBadge.classList.add('hidden');
+      if (mBadge) mBadge.classList.add('hidden');
+    }
+
+    // ------------------------------------------------------------
+    // Panel CS/Admin: pantauan real-time SEMUA lead via onSnapshot
+    // ------------------------------------------------------------
+    function startLeadsListenerCsAdmin() {
+      cleanupLeadsListener();
+      unsubscribeLeads = db.collection('leads')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(function (snapshot) {
+          allLeadsData = snapshot.docs.map(function (doc) {
+            const data = doc.data();
+            return Object.assign({ id: doc.id }, data);
+          });
+          renderMarketingGrid();
+          if (currentDetailMarketing) renderDetailTable(currentDetailMarketing);
+          updateNotifBadge('csAdmin', allLeadsData);
+          processRealtimeNotifications('csAdmin', allLeadsData);
+        }, function (err) {
+          console.error('Gagal memuat leads:', err);
+        });
+    }
+
+    function renderMarketingGrid() {
+      const container = document.getElementById('marketingGridView');
+      if (!allLeadsData.length) {
+        container.innerHTML = '<p class="text-sm text-[#5c6b62] sm:col-span-2 lg:col-span-3">Belum ada data lead.</p>';
+        return;
+      }
+
+      // Kumpulkan nama marketing unik dari data lead real (bukan daftar statis).
+      const names = Array.from(new Set(allLeadsData.map(function (l) { return l.assignedTo; }))).filter(Boolean).sort();
+
+      container.innerHTML = names.map(function (name) {
+        const list = allLeadsData.filter(function (l) { return l.assignedTo === name; });
+        const aktif = list.filter(function (l) { return CLOSED_STATUSES.indexOf(l.status) === -1; }).length;
+        const belum = list.filter(function (l) { return l.status === 'New'; }).length;
+        const initial = name.trim().charAt(0).toUpperCase();
+        return '<button type="button" onclick="showMarketingDetail(\'' + escapeHtml(name).replace(/'/g, "\\'") + '\')" class="dash-card text-left p-5">' +
+          '<div class="flex items-center gap-3 mb-4">' +
+            '<div class="w-10 h-10 rounded-full bg-[var(--green-bg)] text-[var(--green-dark)] font-bold flex items-center justify-center">' + escapeHtml(initial) + '</div>' +
+            '<h3 class="font-bold text-[15px]">' + escapeHtml(name) + '</h3>' +
+          '</div>' +
+          '<div class="flex items-end justify-between">' +
+            '<div><p class="text-xs text-[#5c6b62]">Total Lead Aktif</p><p class="text-2xl font-bold mt-0.5">' + aktif + '</p></div>' +
+            '<div class="text-right"><p class="text-xs text-[#5c6b62]">Belum Follow-Up</p><p class="text-2xl font-bold mt-0.5 text-[var(--red)]">' + belum + '</p></div>' +
+          '</div>' +
+        '</button>';
+      }).join('');
+    }
+
+    function renderDetailTable(name) {
+      const tbody = document.getElementById('detailTableBody');
+      const list = allLeadsData.filter(function (l) { return l.assignedTo === name; });
+      tbody.innerHTML = list.map(function (l) {
+        const tanggal = formatDateID(toJsDate(l.createdAt));
+        const jadwalFollowUp = formatDateID(toJsDate(l.nextFollowUpDate || l.lastUpdated || l.createdAt));
+        const sla = computeSla(l);
+        const safeId = escapeHtml(l.id);
+        return '<tr class="cursor-pointer" onclick="openDetailModal(\'' + safeId + '\')">' +
+          '<td class="px-4 sm:px-5 py-3 text-sm whitespace-nowrap">' + tanggal + '</td>' +
+          '<td class="px-4 sm:px-5 py-3 text-sm font-medium">' + escapeHtml(l.buyerName) + '</td>' +
+          '<td class="px-4 sm:px-5 py-3 text-sm">' + escapeHtml(l.project) + '</td>' +
+          '<td class="px-4 sm:px-5 py-3 text-sm whitespace-nowrap">' + jadwalFollowUp + '</td>' +
+          '<td class="px-4 sm:px-5 py-3"><span class="sla-pill sla-' + sla + '">' + escapeHtml(l.status) + '</span></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function showMarketingDetail(name) {
+      currentDetailMarketing = name;
+      document.getElementById('detailTitle').textContent = 'Detail Lead: ' + name;
+      renderDetailTable(name);
+      document.getElementById('marketingGridView').classList.add('hidden');
+      document.getElementById('marketingDetailView').classList.remove('hidden');
+    }
+
+    function showMarketingGrid() {
+      currentDetailMarketing = null;
+      document.getElementById('marketingDetailView').classList.add('hidden');
+      document.getElementById('marketingGridView').classList.remove('hidden');
+    }
+
+    // ------------------------------------------------------------
+    // Panel CS: submit form Input Lead Baru -> simpan ke Firestore 'leads'
+    // ------------------------------------------------------------
+    const leadForm = document.getElementById('leadForm');
+    if (leadForm) {
+      const leadToast = document.getElementById('leadToast');
+      const leadSubmitBtn = leadForm.querySelector('button[type="submit"]');
+
+      leadForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const buyerName = document.getElementById('buyerName').value.trim();
+        const waNumber = document.getElementById('waNumber').value.trim();
+        const adSource = document.getElementById('adSource').value;
+        const project = document.getElementById('project').value;
+        const assignedTo = document.getElementById('assignedTo').value;
+        if (!buyerName || !waNumber || !adSource || !project || !assignedTo) return;
+
+        leadSubmitBtn.disabled = true;
+        leadSubmitBtn.textContent = 'Menyimpan...';
+
+        db.collection('leads').add({
+          buyerName: buyerName,
+          waNumber: waNumber,
+          adSource: adSource,
+          project: project,
+          assignedTo: assignedTo,
+          status: 'New',
+          nextFollowUpDate: defaultNextFollowUp(), // default: 3 hari dari hari ini
+          createdAt: FieldValue.serverTimestamp(),
+          lastUpdated: FieldValue.serverTimestamp()
+        }).then(function () {
+          leadForm.reset();
+          leadToast.style.opacity = '1';
+          setTimeout(function () { leadToast.style.opacity = '0'; }, 2200);
+        }).catch(function (err) {
+          alert('Gagal menyimpan lead: ' + err.message);
+        }).finally(function () {
+          leadSubmitBtn.disabled = false;
+          leadSubmitBtn.textContent = 'Submit Lead';
+        });
+        // onSnapshot pada koleksi 'leads' akan otomatis memperbarui dashboard & tabel.
+      });
+    }
+
+    // ------------------------------------------------------------
+    // Panel Marketing: pantauan real-time lead MILIK marketing yang login
+    // ------------------------------------------------------------
+    function startLeadsListenerMarketing(name) {
+      cleanupLeadsListener();
+      unsubscribeLeads = db.collection('leads')
+        .where('assignedTo', '==', name)
+        .onSnapshot(function (snapshot) {
+          marketingLeadsData = snapshot.docs.map(function (doc) {
+            const data = doc.data();
+            return Object.assign({ id: doc.id }, data);
+          });
+          // Urutkan terbaru dulu di sisi klien (tanpa perlu composite index Firestore).
+          marketingLeadsData.sort(function (a, b) {
+            return toJsDate(b.createdAt) - toJsDate(a.createdAt);
+          });
+          renderMarketingCards();
+          updateNotifBadge('marketing', marketingLeadsData);
+          processRealtimeNotifications('marketing', marketingLeadsData);
+        }, function (err) {
+          console.error('Gagal memuat lead marketing:', err);
+        });
+    }
+
+    function renderMarketingCards() {
+      const container = document.getElementById('marketingCardsContainer');
+      const totalEl = document.getElementById('leadTotal');
+      const perluTindakLanjut = marketingLeadsData.filter(function (l) { return CLOSED_STATUSES.indexOf(l.status) === -1; }).length;
+      if (totalEl) totalEl.textContent = perluTindakLanjut;
+
+      if (!marketingLeadsData.length) {
+        container.innerHTML = '<p class="text-sm text-[#5c6b62] text-center py-8">Belum ada lead yang ditugaskan ke kamu.</p>';
+        return;
+      }
+
+      container.innerHTML = marketingLeadsData.map(function (lead) {
+        const sla = computeSla(lead);
+        const safeId = escapeHtml(lead.id);
+        return '<article class="lead-card edge-' + sla + ' p-4 cursor-pointer" data-id="' + safeId + '" onclick="openDetailModal(\'' + safeId + '\')">' +
+          '<div class="flex items-start justify-between gap-3">' +
+            '<div><h2 class="font-bold text-[15px]">' + escapeHtml(lead.buyerName) + '</h2>' +
+            '<p class="text-sm text-[#5c6b62] mt-0.5">' + escapeHtml(lead.project) + '</p></div>' +
+            '<span class="sla-pill sla-' + sla + ' whitespace-nowrap">' + escapeHtml(lead.status) + '</span>' +
+          '</div>' +
+          '<p class="text-xs text-[#6b7970] mt-2">' + slaCaption(lead) + '</p>' +
+          '<div class="mt-3 pt-3 border-t border-[var(--line)] flex items-center gap-4 text-sm">' +
+            '<div class="flex items-center gap-1.5 text-[var(--ink)]">' + ICON_PHONE + '<span>' + escapeHtml(lead.waNumber) + '</span></div>' +
+            '<div class="flex items-center gap-1.5 text-[#5c6b62]">' + ICON_SOURCE + '<span>' + escapeHtml(lead.adSource) + '</span></div>' +
+          '</div>' +
+          '<div class="mt-3 flex items-center gap-2">' +
+            '<a href="' + waLink(lead.waNumber) + '" target="_blank" rel="noopener" class="icon-btn" aria-label="Chat WhatsApp" onclick="event.stopPropagation()">' + ICON_WA + '</a>' +
+            '<button type="button" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1" onclick="event.stopPropagation(); openModal(\'' + safeId + '\')">Update Status</button>' +
+          '</div>' +
+        '</article>';
+      }).join('');
+    }
+
+    // ------------------------------------------------------------
+    // Panel Marketing: modal Update Status -> updateDoc ke Firestore
+    // ------------------------------------------------------------
+    function openModal(leadId) {
+      const lead = findLeadById(leadId);
+      if (!lead) return;
+      currentModalLeadId = leadId;
+
+      document.getElementById('modalLeadName').textContent = 'Nama Lead: ' + lead.buyerName;
+      const statusSelect = document.getElementById('statusSelect');
+      const optionExists = Array.from(statusSelect.options).some(function (o) { return o.value === lead.status; });
+      statusSelect.value = optionExists ? lead.status : statusSelect.options[0].value;
+      document.getElementById('followUpNote').value = '';
+
+      // Field jadwal follow-up berikutnya: otomatis terisi 3 hari dari hari ini saat modal dibuka,
+      // tapi tetap bisa diubah bebas oleh marketing lewat kalender sebelum disimpan.
+      document.getElementById('nextFollowUpDate').value = toDateInputValue(defaultNextFollowUp());
+
+      const overlay = document.getElementById('modalOverlay');
+      const box = document.getElementById('modalBox');
+      overlay.classList.remove('hidden', 'pointer-events-none');
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }
+
+    function closeModal() {
+      const overlay = document.getElementById('modalOverlay');
+      const box = document.getElementById('modalBox');
+      overlay.style.opacity = '0';
+      box.style.opacity = '0';
+      box.style.transform = 'scale(0.95)';
+      overlay.classList.add('pointer-events-none');
+      setTimeout(function () { overlay.classList.add('hidden'); }, 200);
+      currentModalLeadId = null;
+    }
+
+    // ------------------------------------------------------------
+    // Modal Detail Lead: info lengkap + riwayat follow-up (notes)
+    // ------------------------------------------------------------
+    function openDetailModal(leadId) {
+      const lead = findLeadById(leadId);
+      if (!lead) return;
+      currentDetailLeadId = leadId;
+
+      document.getElementById('detailModalName').textContent = lead.buyerName;
+      document.getElementById('detailModalProject').textContent = lead.project;
+      document.getElementById('detailModalWa').textContent = lead.waNumber;
+      document.getElementById('detailModalSource').textContent = lead.adSource;
+      document.getElementById('detailModalFollowUp').textContent =
+        formatDateID(toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt));
+      document.getElementById('detailModalWaLink').href = waLink(lead.waNumber);
+
+      const statusBadge = document.getElementById('detailModalStatus');
+      statusBadge.textContent = lead.status;
+      statusBadge.className = 'sla-pill sla-' + computeSla(lead) + ' whitespace-nowrap';
+
+      document.getElementById('detailModalHistory').innerHTML = renderHistoryList(lead);
+
+      // Tombol "Update Status" dari Detail Modal hanya untuk role Marketing (SPV/Admin hanya memantau).
+      const updateBtn = document.getElementById('detailModalUpdateBtn');
+      if (currentUser && currentUser.role === 'Marketing') {
+        updateBtn.classList.remove('hidden');
+      } else {
+        updateBtn.classList.add('hidden');
+      }
+
+      const overlay = document.getElementById('detailModalOverlay');
+      const box = document.getElementById('detailModalBox');
+      overlay.classList.remove('hidden', 'pointer-events-none');
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }
+
+    function closeDetailModal() {
+      const overlay = document.getElementById('detailModalOverlay');
+      const box = document.getElementById('detailModalBox');
+      overlay.style.opacity = '0';
+      box.style.opacity = '0';
+      box.style.transform = 'scale(0.95)';
+      overlay.classList.add('pointer-events-none');
+      setTimeout(function () { overlay.classList.add('hidden'); }, 200);
+      currentDetailLeadId = null;
+    }
+
+    // Dari Detail Modal, lanjut ke modal Update Status untuk lead yang sama.
+    function openUpdateFromDetail() {
+      const leadId = currentDetailLeadId;
+      closeDetailModal();
+      if (leadId) openModal(leadId);
+    }
+
+    function saveUpdate() {
+      if (!currentModalLeadId) { closeModal(); return; }
+      const newStatus = document.getElementById('statusSelect').value;
+      const note = document.getElementById('followUpNote').value.trim();
+      const nextFollowUpDate = fromDateInputValue(document.getElementById('nextFollowUpDate').value);
+      const saveBtn = document.querySelector('#modalBox button[onclick="saveUpdate()"]');
+
+      // Setiap update status ditambahkan sebagai entri baru ke riwayat (array 'notes'), tidak menimpa yang lama.
+      // Catatan: 'date' di sini pakai Date lokal (bukan serverTimestamp), karena Firestore tidak
+      // mengizinkan FieldValue.serverTimestamp() di dalam elemen array.
+      const historyEntry = {
+        date: new Date(),
+        status: newStatus,
+        note: note
+      };
+
+      const updatePayload = {
+        status: newStatus,
+        nextFollowUpDate: nextFollowUpDate,
+        lastUpdated: FieldValue.serverTimestamp(),
+        notes: FieldValue.arrayUnion(historyEntry)
+      };
+
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan...'; }
+
+      db.collection('leads').doc(currentModalLeadId).update(updatePayload)
+        .then(function () {
+          closeModal();
+        })
+        .catch(function (err) {
+          alert('Gagal memperbarui status: ' + err.message);
+        })
+        .finally(function () {
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Simpan Update'; }
+        });
+      // onSnapshot pada Panel Marketing & Panel CS/Admin otomatis merefresh tampilan & riwayat.
+    }
+  </script>
+
+</body>
+</html>
