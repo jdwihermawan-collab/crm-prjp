@@ -195,6 +195,164 @@
     border-color:var(--green);
     box-shadow:0 0 0 2px rgba(15,107,76,0.18);
   }
+  .lead-card.is-hot{
+    box-shadow:0 0 0 1.5px rgba(224,52,44,0.32);
+  }
+
+  /* Tag "Hot Prospek": lencana + tombol toggle (kartu marketing, tabel CS/Admin, modal detail) */
+  .hot-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:0.25rem;
+    font-size:0.6875rem;
+    font-weight:800;
+    padding:0.25rem 0.55rem;
+    border-radius:999px;
+    background:linear-gradient(135deg,#ff7a45,#e0342c);
+    color:#ffffff;
+    white-space:nowrap;
+    box-shadow:0 1px 4px rgba(224,52,44,0.35);
+  }
+  .hot-badge-sm{ font-size:0.625rem; padding:0.15rem 0.45rem; gap:0.2rem; }
+  .hot-toggle-icon-btn{
+    color:#9a5a12;
+    transition:background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+  .hot-toggle-icon-btn:active{ transform:translateY(1px); }
+  .hot-toggle-icon-btn.hot-active{
+    color:#ffffff;
+    background:linear-gradient(135deg,#ff7a45,#e0342c);
+    border-color:transparent;
+    box-shadow:0 2px 8px rgba(224,52,44,0.35);
+  }
+
+  /* Toggle "Hidden" untuk entri Riwayat Follow-Up lama (fitur Catatan Lead versi
+     sebelumnya sudah dihapus & digantikan Card Catatan Pribadi Marketing di bawah,
+     namun CSS ini tetap dipertahankan agar entri riwayat lama yang sudah terlanjur
+     tersimpan dengan isHidden:true di Firestore tetap tampil benar). */
+  .note-hidden-placeholder{
+    display:inline-flex;
+    align-items:center;
+    gap:0.3rem;
+    font-size:0.8125rem;
+    font-style:italic;
+    color:#8a958e;
+    background:#f1efe8;
+    border:1px dashed #d8d3c5;
+    border-radius:0.5rem;
+    padding:0.4rem 0.6rem;
+    margin-top:0.375rem;
+  }
+  .note-hidden-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:0.2rem;
+    font-size:0.625rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    color:#4b5563;
+    background:#e6e5e0;
+    border-radius:999px;
+    padding:0.1rem 0.4rem;
+  }
+  /* Card "Catatan Pribadi Marketing" di Modal Detail: satu kotak teks tunggal
+     untuk pengingat personal marketing (mis. preferensi unit buyer). Disimpan
+     sebagai field tunggal ('privateNote' + 'privateNoteHidden') yang ditimpa
+     (overwrite) setiap disimpan — bukan entri baru di array 'notes' —
+     sehingga TIDAK pernah muncul di Riwayat Follow-Up. Defaultnya tersembunyi
+     (collapsed) dan baru terbuka saat tombol pemicu "+ Tulis Catatan Baru"
+     diklik, supaya tampilan awal modal tetap ringkas. Hanya terlihat untuk
+     role Marketing. */
+  .private-note-trigger-btn{
+    background:#fbfaf7;
+    color:var(--green-dark);
+    border:1px dashed #c9c3b3;
+    transition:background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+  .private-note-trigger-btn:hover{ background:#f1efe8; border-color:#b7b09c; }
+  .private-note-trigger-btn:active{ transform:translateY(1px); }
+  .private-note-trigger-dot{
+    display:inline-block;
+    width:0.4rem;
+    height:0.4rem;
+    border-radius:999px;
+    background:#e0342c;
+    flex-shrink:0;
+  }
+  /* Panel luar mengatur animasi buka/tutup (max-height + fade), panel dalam
+     menyimpan tampilan visual (border, padding, background) supaya transisi
+     tetap mulus tanpa ikut menganimasikan padding. */
+  .private-note-panel{
+    max-height:0;
+    opacity:0;
+    overflow:hidden;
+    margin-bottom:0;
+    border-radius:0.875rem;
+    transition:max-height 0.32s ease, opacity 0.28s ease, margin-bottom 0.32s ease;
+  }
+  .private-note-panel.private-note-panel-open{
+    opacity:1;
+    margin-bottom:1rem;
+  }
+  .private-note-card{
+    border:1px solid #e3d9b8;
+    border-radius:0.875rem;
+    padding:1rem;
+    background:#fdfaf0;
+  }
+  .private-note-hint{
+    font-size:0.6875rem;
+    color:#8a958e;
+    line-height:1.4;
+  }
+  .private-note-status{
+    font-size:0.75rem;
+    font-weight:600;
+    color:#1f8a5c;
+    opacity:0;
+    transition:opacity 0.2s ease;
+  }
+  .private-note-status.is-visible{ opacity:1; }
+  /* Toggle "Hidden" di dalam Card Catatan Pribadi Marketing — menandai
+     privateNoteHidden:true saat disimpan, sebagai pengaman tambahan supaya
+     catatan ini tidak pernah ikut bocor/ditampilkan lewat fitur lain di
+     Panel SPV/CS di masa depan (di luar Modal Detail sendiri, yang memang
+     sudah menyembunyikan seluruh Card ini untuk role selain Marketing). */
+  .private-note-hidden-toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:0.4375rem;
+    font-size:0.75rem;
+    font-weight:700;
+    padding:0.375rem 0.75rem 0.375rem 0.6rem;
+    border-radius:999px;
+    background:#f1efe8;
+    color:#5c6b62;
+    border:1px solid var(--line);
+    transition:background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .private-note-hidden-toggle:hover{ background:#e9e6dc; }
+  .private-note-hidden-toggle:active{ transform:translateY(1px); }
+  .private-note-hidden-toggle .private-note-hidden-dot{
+    width:0.5rem;
+    height:0.5rem;
+    border-radius:999px;
+    background:#aab3ac;
+    transition:background 0.15s ease;
+    flex-shrink:0;
+  }
+  .private-note-hidden-toggle.private-note-hidden-active{
+    background:linear-gradient(135deg,#4b5563,#1f2937);
+    color:#ffffff;
+    border-color:transparent;
+    box-shadow:0 2px 8px rgba(31,41,55,0.35);
+  }
+  .private-note-hidden-toggle.private-note-hidden-active .private-note-hidden-dot{
+    background:#ffffff;
+  }
 
   /* Mode "Pilih" (bulk delete) di Panel Marketing */
   .lead-select-check{
@@ -640,6 +798,86 @@
             </div>
           </div>
 
+          <!-- Filter pencarian lead: Status, Proyek, teks bebas (nama/no. WA), dan rentang tanggal
+               (Tanggal Masuk / Terakhir Chat-Update). Menyaring baris tabel secara instan di sisi
+               klien, tanpa menyentuh onSnapshot / mode Pilih / modal detail. Panel bisa
+               dibuka/tutup (collapse) lewat tombol "Filter & Cari" agar layar tidak penuh. -->
+          <div class="bg-[var(--card)] border border-[var(--line)] rounded-xl mt-4 overflow-hidden">
+            <button type="button" id="csFilterToggleBtn" onclick="toggleCsFilterPanel()" aria-expanded="false" aria-controls="csFilterBody" class="w-full flex items-center justify-between gap-2 px-3.5 py-3">
+              <span class="flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"><path d="M4 5h16l-6 7.5V19l-4 2v-8.5L4 5Z" stroke="#0f6b4c" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                <span class="text-sm font-bold">Filter &amp; Cari</span>
+                <span id="csFilterCountBadge" class="hidden text-[0.6875rem] font-bold bg-[var(--green-bg)] text-[var(--green-dark)] rounded-full px-2 py-0.5 leading-none">0</span>
+              </span>
+              <svg id="csFilterChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" style="transition:transform 0.2s ease;" class="flex-shrink-0"><path d="M6 9l6 6 6-6" stroke="#5c6b62" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div id="csFilterBody" class="hidden px-3.5 pb-3.5 pt-0.5 border-t border-[var(--line)] space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3">
+                <div>
+                  <label for="csFilterStatus" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Status</label>
+                  <select id="csFilterStatus" onchange="onCsFilterChange()" class="field-input" aria-label="Filter Status">
+                    <option value="">Semua Status</option>
+                    <option value="New">New</option>
+                    <option value="Awal Chat">Awal Chat</option>
+                    <option value="Follow-Up 1">Follow-Up 1</option>
+                    <option value="Follow-Up 2">Follow-Up 2</option>
+                    <option value="Follow-Up 3">Follow-Up 3</option>
+                    <option value="Site Visit">Site Visit</option>
+                    <option value="Closed (Deal)">Closed (Deal)</option>
+                    <option value="Lost (Batal)">Lost (Batal)</option>
+                    <option value="Lain-lain">Lain-lain</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="csFilterProject" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Proyek</label>
+                  <select id="csFilterProject" onchange="onCsFilterChange()" class="field-input" aria-label="Filter Proyek">
+                    <option value="">Semua Proyek</option>
+                    <option value="Pacific Hills">Pacific Hills</option>
+                    <option value="Green Amalia">Green Amalia</option>
+                    <option value="Griya Adhinata">Griya Adhinata</option>
+                    <option value="The Sultan">The Sultan</option>
+                    <option value="Naomy Residence">Naomy Residence</option>
+                    <option value="New Alam Mojosari">New Alam Mojosari</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="csFilterSearch" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Cari Nama / No. WA</label>
+                  <input type="text" id="csFilterSearch" oninput="onCsFilterChange()" placeholder="Cari nama / no. WhatsApp" class="field-input" aria-label="Cari nama atau nomor WhatsApp">
+                </div>
+              </div>
+              <div class="pt-3 border-t border-dashed border-[var(--line)]">
+                <label class="text-xs font-semibold text-[#5c6b62] mb-1.5 block">Kategori Lead</label>
+                <div class="cs-input-tabbar w-full sm:w-auto" role="tablist" aria-label="Filter Kategori Lead">
+                  <button type="button" id="csFilterHotAllBtn" class="cs-input-tab-btn cs-input-tab-active" onclick="setCsHotFilter(false)">Semua Lead</button>
+                  <button type="button" id="csFilterHotOnlyBtn" class="cs-input-tab-btn inline-flex items-center gap-1" onclick="setCsHotFilter(true)">🔥 Hot Prospek Saja</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-dashed border-[var(--line)]">
+                <div>
+                  <label for="csFilterDateType" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Jenis Tanggal</label>
+                  <select id="csFilterDateType" onchange="onCsFilterChange()" class="field-input" aria-label="Jenis Filter Tanggal">
+                    <option value="createdAt">Tanggal Masuk</option>
+                    <option value="lastUpdated">Terakhir Chat / Update</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="csFilterDateFrom" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Dari Tanggal</label>
+                  <input type="date" id="csFilterDateFrom" onchange="onCsFilterChange()" class="field-input" aria-label="Dari Tanggal">
+                </div>
+                <div>
+                  <label for="csFilterDateTo" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Sampai Tanggal</label>
+                  <input type="date" id="csFilterDateTo" onchange="onCsFilterChange()" class="field-input" aria-label="Sampai Tanggal">
+                </div>
+              </div>
+              <div class="flex justify-end pt-1">
+                <button type="button" onclick="resetCsFilters()" class="cancel-btn font-semibold text-xs px-3.5 py-2 rounded-lg inline-flex items-center gap-1.5">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" stroke="#16241d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Reset Semua
+                </button>
+              </div>
+            </div>
+          </div>
+
           <h3 id="detailTitle" class="text-lg font-bold mt-4 mb-3">Detail Lead: -</h3>
 
           <div class="bg-[var(--card)] border border-[var(--line)] rounded-xl overflow-x-auto">
@@ -698,6 +936,86 @@
     </header>
 
     <main class="px-4 pt-5 space-y-4 max-w-md mx-auto">
+      <!-- Filter pencarian lead: Status, Proyek, teks bebas (nama/no. WA), dan rentang tanggal
+           (Tanggal Masuk / Terakhir Chat-Update). Menyaring tampilan kartu secara instan di sisi
+           klien, tanpa menyentuh onSnapshot / mode Pilih / modal detail. Panel bisa dibuka/tutup
+           (collapse) lewat tombol "Filter & Cari" agar layar HP tidak penuh. -->
+      <div class="bg-white border border-[var(--line)] rounded-xl overflow-hidden">
+        <button type="button" id="marketingFilterToggleBtn" onclick="toggleMarketingFilterPanel()" aria-expanded="false" aria-controls="marketingFilterBody" class="w-full flex items-center justify-between gap-2 px-3.5 py-3">
+          <span class="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"><path d="M4 5h16l-6 7.5V19l-4 2v-8.5L4 5Z" stroke="#0f6b4c" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span class="text-sm font-bold">Filter &amp; Cari</span>
+            <span id="marketingFilterCountBadge" class="hidden text-[0.6875rem] font-bold bg-[var(--green-bg)] text-[var(--green-dark)] rounded-full px-2 py-0.5 leading-none">0</span>
+          </span>
+          <svg id="marketingFilterChevron" width="18" height="18" viewBox="0 0 24 24" fill="none" style="transition:transform 0.2s ease;" class="flex-shrink-0"><path d="M6 9l6 6 6-6" stroke="#5c6b62" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div id="marketingFilterBody" class="hidden px-3.5 pb-3.5 pt-0.5 border-t border-[var(--line)] space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3">
+            <div>
+              <label for="marketingFilterStatus" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Status</label>
+              <select id="marketingFilterStatus" onchange="onMarketingFilterChange()" class="field-input" aria-label="Filter Status">
+                <option value="">Semua Status</option>
+                <option value="New">New</option>
+                <option value="Awal Chat">Awal Chat</option>
+                <option value="Follow-Up 1">Follow-Up 1</option>
+                <option value="Follow-Up 2">Follow-Up 2</option>
+                <option value="Follow-Up 3">Follow-Up 3</option>
+                <option value="Site Visit">Site Visit</option>
+                <option value="Closed (Deal)">Closed (Deal)</option>
+                <option value="Lost (Batal)">Lost (Batal)</option>
+                <option value="Lain-lain">Lain-lain</option>
+              </select>
+            </div>
+            <div>
+              <label for="marketingFilterProject" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Proyek</label>
+              <select id="marketingFilterProject" onchange="onMarketingFilterChange()" class="field-input" aria-label="Filter Proyek">
+                <option value="">Semua Proyek</option>
+                <option value="Pacific Hills">Pacific Hills</option>
+                <option value="Green Amalia">Green Amalia</option>
+                <option value="Griya Adhinata">Griya Adhinata</option>
+                <option value="The Sultan">The Sultan</option>
+                <option value="Naomy Residence">Naomy Residence</option>
+                <option value="New Alam Mojosari">New Alam Mojosari</option>
+              </select>
+            </div>
+            <div>
+              <label for="marketingFilterSearch" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Cari Nama / No. WA</label>
+              <input type="text" id="marketingFilterSearch" oninput="onMarketingFilterChange()" placeholder="Cari nama / no. WhatsApp" class="field-input" aria-label="Cari nama atau nomor WhatsApp">
+            </div>
+          </div>
+          <div class="pt-3 border-t border-dashed border-[var(--line)]">
+            <label class="text-xs font-semibold text-[#5c6b62] mb-1.5 block">Kategori Lead</label>
+            <div class="cs-input-tabbar w-full sm:w-auto" role="tablist" aria-label="Filter Kategori Lead">
+              <button type="button" id="marketingFilterHotAllBtn" class="cs-input-tab-btn cs-input-tab-active" onclick="setMarketingHotFilter(false)">Semua Lead</button>
+              <button type="button" id="marketingFilterHotOnlyBtn" class="cs-input-tab-btn inline-flex items-center gap-1" onclick="setMarketingHotFilter(true)">🔥 Hot Prospek Saja</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-3 border-t border-dashed border-[var(--line)]">
+            <div>
+              <label for="marketingFilterDateType" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Jenis Tanggal</label>
+              <select id="marketingFilterDateType" onchange="onMarketingFilterChange()" class="field-input" aria-label="Jenis Filter Tanggal">
+                <option value="createdAt">Tanggal Masuk</option>
+                <option value="lastUpdated">Terakhir Chat / Update</option>
+              </select>
+            </div>
+            <div>
+              <label for="marketingFilterDateFrom" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Dari Tanggal</label>
+              <input type="date" id="marketingFilterDateFrom" onchange="onMarketingFilterChange()" class="field-input" aria-label="Dari Tanggal">
+            </div>
+            <div>
+              <label for="marketingFilterDateTo" class="text-xs font-semibold text-[#5c6b62] mb-1 block">Sampai Tanggal</label>
+              <input type="date" id="marketingFilterDateTo" onchange="onMarketingFilterChange()" class="field-input" aria-label="Sampai Tanggal">
+            </div>
+          </div>
+          <div class="flex justify-end pt-1">
+            <button type="button" onclick="resetMarketingFilters()" class="cancel-btn font-semibold text-xs px-3.5 py-2 rounded-lg inline-flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" stroke="#16241d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Reset Semua
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Mode "Pilih": tombol untuk masuk mode pilih, lalu bar aksi Hapus/Batal saat mode aktif -->
       <div class="flex items-center justify-between gap-2">
         <p class="text-sm text-[#5c6b62]">Daftar lead kamu</p>
@@ -741,10 +1059,7 @@
         </select>
 
         <label class="field-label" for="nextFollowUpDate">Jadwal Follow-Up Berikutnya</label>
-        <input type="date" id="nextFollowUpDate" class="modal-input mb-4">
-
-        <label class="field-label" for="followUpNote">Catatan Follow-Up</label>
-        <textarea id="followUpNote" rows="3" placeholder="Tulis hasil percakapan dengan lead..." class="modal-input mb-5 resize-none"></textarea>
+        <input type="date" id="nextFollowUpDate" class="modal-input mb-5">
 
         <div class="flex items-center gap-3">
           <button type="button" onclick="closeModal()" class="cancel-btn font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">
@@ -770,7 +1085,19 @@
           <h3 id="detailModalName" class="font-bold text-lg">Nama Lead</h3>
           <p id="detailModalProject" class="text-sm text-[#5c6b62] mt-0.5">Proyek</p>
         </div>
-        <span id="detailModalStatus" class="sla-pill sla-green whitespace-nowrap">Status</span>
+        <div class="flex flex-col items-end gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <span id="detailModalStatus" class="sla-pill sla-green whitespace-nowrap">Status</span>
+            <!-- Tombol kompak Tandai Hot Prospek: menyatu di baris header info lead,
+                 berdampingan dengan pill status, bukan tombol besar satu baris penuh.
+                 Warna berubah menyala (gradient merah-oranye + ikon api putih) saat
+                 lead sedang ditandai Hot Prospek — lihat updateDetailModalHotUI(). -->
+            <button type="button" id="detailModalHotToggleBtn" onclick="toggleHotFromDetail()" aria-pressed="false" aria-label="Tandai Hot Prospek" title="Tandai Hot Prospek" class="icon-btn hot-toggle-icon-btn flex-shrink-0">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 2c.3 2.2-.6 3.6-2 5-1.6 1.6-3 3.3-3 5.8a4.5 4.5 0 0 0 9 0c0-1-.3-1.8-.7-2.6.9.5 1.7 1.4 1.7 3.1a5.5 5.5 0 0 1-11 0C6.5 9.3 8.7 7 10.3 5.3 11.4 4.1 12.6 3 12.5 2Z"/></svg>
+            </button>
+          </div>
+          <span id="detailModalHotBadge" class="hidden hot-badge">🔥 Hot Prospek</span>
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
@@ -781,6 +1108,10 @@
         <div>
           <p class="text-xs text-[#5c6b62]">Sumber Iklan</p>
           <p id="detailModalSource" class="font-medium">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-[#5c6b62]">Tanggal Masuk</p>
+          <p id="detailModalCreatedAt" class="font-medium">-</p>
         </div>
         <div class="col-span-2">
           <p class="text-xs text-[#5c6b62]">Jadwal Follow-Up Berikutnya</p>
@@ -802,9 +1133,52 @@
         </button>
       </div>
 
+      <!-- ============================================================ -->
+      <!-- Catatan Pribadi Marketing — pengingat personal marketing untuk -->
+      <!-- lead ini (mis. preferensi unit buyer). Opsional & tersembunyi  -->
+      <!-- (collapsed) secara default — kotak teks baru terbuka saat      -->
+      <!-- tombol "+ Tulis Catatan Baru" diklik (openPrivateNoteCard()).  -->
+      <!-- Disimpan sebagai field TUNGGAL ('privateNote' +                -->
+      <!-- 'privateNoteHidden') pada dokumen lead — bukan entri array     -->
+      <!-- 'notes' — sehingga TIDAK PERNAH tampil di Riwayat Follow-Up    -->
+      <!-- publik. Setiap kali disimpan, isinya MENIMPA (overwrite)       -->
+      <!-- catatan sebelumnya, jadi tidak menumpuk jadi banyak baris      -->
+      <!-- linimasa, dan selalu bisa diedit ulang kapan saja saat modal   -->
+      <!-- dibuka kembali (lihat savePrivateNote()). Hanya terlihat       -->
+      <!-- untuk role Marketing.                                          -->
+      <!-- ============================================================ -->
+      <button type="button" id="privateNoteAddBtn" onclick="openPrivateNoteCard()" class="hidden private-note-trigger-btn w-full font-semibold text-sm px-4 py-2.5 rounded-lg mb-1 flex items-center justify-center gap-1.5">
+        <span class="text-base leading-none">+</span> Tulis Catatan Baru
+        <span id="privateNoteTriggerDot" class="hidden private-note-trigger-dot"></span>
+      </button>
+
+      <div id="privateNotePanel" class="private-note-panel">
+        <div id="privateNoteCard" class="private-note-card">
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <h4 class="font-bold text-sm">📝 Catatan Pribadi Marketing</h4>
+            <button type="button" id="privateNoteHiddenBtn" onclick="togglePrivateNoteHidden()" aria-pressed="false" class="private-note-hidden-toggle">
+              <span class="private-note-hidden-dot"></span>
+              <span>Hidden</span>
+            </button>
+          </div>
+          <p class="private-note-hint mb-2">Hanya untuk pengingat Anda sendiri (mis. buyer minta unit ABC). Tidak masuk ke Riwayat Follow-Up dan tidak terlihat oleh SPV/CS. Jika 'Hidden' aktif, catatan tersimpan dengan status tersembunyi. Bisa diedit dan disimpan ulang kapan saja — isi lama otomatis tertimpa.</p>
+          <textarea id="privateNoteInput" rows="3" placeholder="Contoh: Buyer minta unit hook, budget maks 500jt, follow up sore hari..." class="field-input resize-none mb-2"></textarea>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="cancelPrivateNoteCard()" class="cancel-btn font-semibold text-sm px-4 py-2.5 rounded-lg">
+              Batal
+            </button>
+            <span id="privateNoteStatus" class="private-note-status">Tersimpan</span>
+            <button type="button" id="privateNoteSaveBtn" onclick="savePrivateNote()" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">
+              Simpan Catatan
+            </button>
+          </div>
+        </div>
+      </div>
+
       <h4 class="font-bold text-sm mb-2">Riwayat Follow-Up</h4>
       <div id="detailModalHistory" class="space-y-0">
         <p class="text-sm text-[#5c6b62]">Belum ada riwayat update.</p>
+
       </div>
 
       <div class="mt-5 space-y-2">
@@ -867,6 +1241,205 @@
     let unsubscribeLeads = null;     // handle onSnapshot aktif (CS/Admin atau Marketing)
     let allLeadsData = [];           // dipakai role CS/Admin (semua lead)
     let marketingLeadsData = [];     // dipakai role Marketing (lead miliknya saja)
+    // Filter pencarian lead (Status / Proyek / teks nama & no. WA / rentang tanggal / kategori
+    // Hot Prospek) — state terpisah untuk Panel Marketing dan Panel CS/Admin, murni menyaring
+    // tampilan tanpa mengubah data asli. dateType menentukan field tanggal yang dipakai:
+    // 'createdAt' (Tanggal Masuk) atau 'lastUpdated' (Terakhir Chat / Update). dateFrom/dateTo
+    // berformat yyyy-mm-dd dari <input type="date">, kosong berarti tidak ada batas pada sisi
+    // tersebut. hotOnly=true berarti hanya menampilkan lead yang ditandai Hot Prospek (isHot).
+    let marketingFilterState = { status: '', project: '', search: '', dateType: 'createdAt', dateFrom: '', dateTo: '', hotOnly: false };
+    let csFilterState = { status: '', project: '', search: '', dateType: 'createdAt', dateFrom: '', dateTo: '', hotOnly: false };
+
+    // Parse value <input type="date"> (yyyy-mm-dd) -> Date lokal, khusus untuk rentang filter
+    // tanggal (terpisah dari fromDateInputValue supaya tidak mengganggu default follow-up).
+    // endOfDay=true dipakai untuk batas "Sampai" agar mencakup seluruh hari itu (23:59:59.999).
+    function parseFilterDateValue(value, endOfDay) {
+      const parts = value.split('-');
+      const y = Number(parts[0]), m = Number(parts[1]) - 1, d = Number(parts[2]);
+      return endOfDay ? new Date(y, m, d, 23, 59, 59, 999) : new Date(y, m, d, 0, 0, 0, 0);
+    }
+
+    function applyLeadFilters(list, filters) {
+      const fromDate = filters.dateFrom ? parseFilterDateValue(filters.dateFrom, false) : null;
+      const toDate = filters.dateTo ? parseFilterDateValue(filters.dateTo, true) : null;
+      return list.filter(function (l) {
+        if (filters.status && l.status !== filters.status) return false;
+        if (filters.project && l.project !== filters.project) return false;
+        if (filters.hotOnly && !l.isHot) return false;
+        if (filters.search) {
+          const q = filters.search.trim().toLowerCase();
+          const name = (l.buyerName || '').toLowerCase();
+          const wa = (l.waNumber || '').toLowerCase();
+          if (q && name.indexOf(q) === -1 && wa.indexOf(q) === -1) return false;
+        }
+        if (fromDate || toDate) {
+          // 'lastUpdated' fallback ke createdAt untuk lead yang belum pernah di-update statusnya.
+          const rawDate = filters.dateType === 'lastUpdated' ? (l.lastUpdated || l.createdAt) : l.createdAt;
+          const leadDate = toJsDate(rawDate);
+          if (fromDate && leadDate < fromDate) return false;
+          if (toDate && leadDate > toDate) return false;
+        }
+        return true;
+      });
+    }
+
+    // Panel filter "Filter & Cari" bisa di-collapse (tutup/buka) supaya layar tidak penuh,
+    // terutama di HP. Default: tertutup. Murni state tampilan, tidak memengaruhi filter aktif.
+    let marketingFilterPanelOpen = false;
+    let csFilterPanelOpen = false;
+
+    function toggleMarketingFilterPanel() {
+      marketingFilterPanelOpen = !marketingFilterPanelOpen;
+      document.getElementById('marketingFilterBody').classList.toggle('hidden', !marketingFilterPanelOpen);
+      document.getElementById('marketingFilterToggleBtn').setAttribute('aria-expanded', String(marketingFilterPanelOpen));
+      document.getElementById('marketingFilterChevron').style.transform = marketingFilterPanelOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    function toggleCsFilterPanel() {
+      csFilterPanelOpen = !csFilterPanelOpen;
+      document.getElementById('csFilterBody').classList.toggle('hidden', !csFilterPanelOpen);
+      document.getElementById('csFilterToggleBtn').setAttribute('aria-expanded', String(csFilterPanelOpen));
+      document.getElementById('csFilterChevron').style.transform = csFilterPanelOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    // Jumlah kondisi filter yang sedang aktif, dipakai untuk badge kecil di tombol "Filter & Cari"
+    // (jenis tanggal tidak dihitung sendiri karena tidak berarti apa-apa tanpa Dari/Sampai diisi).
+    function countActiveFilters(filters) {
+      let n = 0;
+      if (filters.status) n++;
+      if (filters.project) n++;
+      if (filters.search && filters.search.trim()) n++;
+      if (filters.dateFrom) n++;
+      if (filters.dateTo) n++;
+      if (filters.hotOnly) n++;
+      return n;
+    }
+
+    function updateFilterCountBadge(badgeId, filters) {
+      const badge = document.getElementById(badgeId);
+      if (!badge) return;
+      const n = countActiveFilters(filters);
+      if (n > 0) {
+        badge.textContent = String(n);
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function onMarketingFilterChange() {
+      marketingFilterState.status = document.getElementById('marketingFilterStatus').value;
+      marketingFilterState.project = document.getElementById('marketingFilterProject').value;
+      marketingFilterState.search = document.getElementById('marketingFilterSearch').value;
+      marketingFilterState.dateType = document.getElementById('marketingFilterDateType').value;
+      marketingFilterState.dateFrom = document.getElementById('marketingFilterDateFrom').value;
+      marketingFilterState.dateTo = document.getElementById('marketingFilterDateTo').value;
+      updateFilterCountBadge('marketingFilterCountBadge', marketingFilterState);
+      renderMarketingCards();
+    }
+
+    // Toggle chip "Kategori Lead": Semua Lead vs Hot Prospek Saja (Panel Marketing / CS-Admin).
+    function setMarketingHotFilter(hotOnly) {
+      marketingFilterState.hotOnly = hotOnly;
+      document.getElementById('marketingFilterHotAllBtn').classList.toggle('cs-input-tab-active', !hotOnly);
+      document.getElementById('marketingFilterHotOnlyBtn').classList.toggle('cs-input-tab-active', hotOnly);
+      updateFilterCountBadge('marketingFilterCountBadge', marketingFilterState);
+      renderMarketingCards();
+    }
+
+    function setCsHotFilter(hotOnly) {
+      csFilterState.hotOnly = hotOnly;
+      document.getElementById('csFilterHotAllBtn').classList.toggle('cs-input-tab-active', !hotOnly);
+      document.getElementById('csFilterHotOnlyBtn').classList.toggle('cs-input-tab-active', hotOnly);
+      updateFilterCountBadge('csFilterCountBadge', csFilterState);
+      if (currentDetailMarketing) renderDetailTable(currentDetailMarketing);
+    }
+
+    // Tombol "Reset Semua": mengosongkan seluruh kondisi filter (Status, Proyek, Cari, Kategori
+    // Hot Prospek, Jenis Tanggal, Dari, Sampai) sekaligus, lalu langsung merefresh tampilan.
+    function resetMarketingFilters() {
+      document.getElementById('marketingFilterStatus').value = '';
+      document.getElementById('marketingFilterProject').value = '';
+      document.getElementById('marketingFilterSearch').value = '';
+      document.getElementById('marketingFilterDateType').value = 'createdAt';
+      document.getElementById('marketingFilterDateFrom').value = '';
+      document.getElementById('marketingFilterDateTo').value = '';
+      marketingFilterState.hotOnly = false;
+      document.getElementById('marketingFilterHotAllBtn').classList.add('cs-input-tab-active');
+      document.getElementById('marketingFilterHotOnlyBtn').classList.remove('cs-input-tab-active');
+      onMarketingFilterChange();
+    }
+
+    function onCsFilterChange() {
+      csFilterState.status = document.getElementById('csFilterStatus').value;
+      csFilterState.project = document.getElementById('csFilterProject').value;
+      csFilterState.search = document.getElementById('csFilterSearch').value;
+      csFilterState.dateType = document.getElementById('csFilterDateType').value;
+      csFilterState.dateFrom = document.getElementById('csFilterDateFrom').value;
+      csFilterState.dateTo = document.getElementById('csFilterDateTo').value;
+      updateFilterCountBadge('csFilterCountBadge', csFilterState);
+      if (currentDetailMarketing) renderDetailTable(currentDetailMarketing);
+    }
+
+    function resetCsFilters() {
+      document.getElementById('csFilterStatus').value = '';
+      document.getElementById('csFilterProject').value = '';
+      document.getElementById('csFilterSearch').value = '';
+      document.getElementById('csFilterDateType').value = 'createdAt';
+      document.getElementById('csFilterDateFrom').value = '';
+      document.getElementById('csFilterDateTo').value = '';
+      csFilterState.hotOnly = false;
+      document.getElementById('csFilterHotAllBtn').classList.add('cs-input-tab-active');
+      document.getElementById('csFilterHotOnlyBtn').classList.remove('cs-input-tab-active');
+      onCsFilterChange();
+    }
+
+    // ------------------------------------------------------------
+    // Tag "Hot Prospek": tandai/batalkan lead potensial tinggi. Disimpan sebagai field
+    // boolean `isHot` di dokumen lead (Firestore), tersinkron real-time lewat onSnapshot
+    // yang sudah ada (Panel Marketing & Panel CS/Admin otomatis merefresh tampilan/badge).
+    // ------------------------------------------------------------
+    function toggleHotProspek(leadId, currentIsHot) {
+      db.collection('leads').doc(leadId).update({ isHot: !currentIsHot })
+        .catch(function (err) {
+          alert('Gagal memperbarui tag Hot Prospek: ' + err.message);
+        });
+    }
+
+    // Tombol toggle Hot Prospek di Modal Detail Lead: update Firestore, lalu refresh
+    // tampilan badge/tombol di modal secara optimis (tidak menunggu onSnapshot).
+    function toggleHotFromDetail() {
+      if (!currentDetailLeadId) return;
+      const lead = findLeadById(currentDetailLeadId);
+      if (!lead) return;
+      const newValue = !lead.isHot;
+      const btn = document.getElementById('detailModalHotToggleBtn');
+      if (btn) btn.disabled = true;
+      db.collection('leads').doc(currentDetailLeadId).update({ isHot: newValue })
+        .then(function () {
+          updateDetailModalHotUI(newValue);
+        })
+        .catch(function (err) {
+          alert('Gagal memperbarui tag Hot Prospek: ' + err.message);
+        })
+        .finally(function () {
+          if (btn) btn.disabled = false;
+        });
+    }
+
+    function updateDetailModalHotUI(isHot) {
+      const badge = document.getElementById('detailModalHotBadge');
+      const btn = document.getElementById('detailModalHotToggleBtn');
+      if (badge) badge.classList.toggle('hidden', !isHot);
+      if (btn) {
+        btn.classList.toggle('hot-active', isHot);
+        btn.setAttribute('aria-pressed', isHot ? 'true' : 'false');
+        const label = isHot ? 'Batalkan Hot Prospek' : 'Tandai Hot Prospek';
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+      }
+    }
+
     let marketingSelectMode = false; // mode "Pilih" untuk hapus banyak lead sekaligus (Panel Marketing)
     let marketingSelectedIds = new Set(); // id lead yang sedang dipilih di mode "Pilih"
     let currentDetailMarketing = null;
@@ -874,11 +1447,15 @@
     let csSelectedIds = new Set();   // id lead yang sedang dipilih di mode "Pilih" (CS/Admin)
     let currentModalLeadId = null;
     let currentDetailLeadId = null;
+    let privateNoteHidden = false; // status toggle 'Hidden' untuk Card Catatan Pribadi Marketing (Modal Detail, role Marketing)
     let lastSuccessLead = null;   // data lead terakhir yang berhasil disubmit, dipakai Kartu Sukses & tombol "Beritahu ke WA"
 
     const ICON_PHONE = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6.6 10.8c1.4 2.7 3.6 4.9 6.3 6.3l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.9 21 3 13.1 3 3.5c0-.6.4-1 1-1h3.6c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1L6.6 10.8Z" stroke="#16241d" stroke-width="1.5" stroke-linejoin="round"/></svg>';
     const ICON_SOURCE = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-3-8-8-3Z" stroke="#5c6b62" stroke-width="1.5" stroke-linejoin="round"/></svg>';
     const ICON_WA = '<svg width="17" height="17" viewBox="0 0 24 24" fill="#1f8a5c"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.5-.3Z"/></svg>';
+    // Ikon api untuk tag "Hot Prospek" — dua warna: abu-abu (belum ditandai) & putih (lencana/tombol aktif berlatar merah-oranye).
+    const ICON_FIRE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 2c.3 2.2-.6 3.6-2 5-1.6 1.6-3 3.3-3 5.8a4.5 4.5 0 0 0 9 0c0-1-.3-1.8-.7-2.6.9.5 1.7 1.4 1.7 3.1a5.5 5.5 0 0 1-11 0C6.5 9.3 8.7 7 10.3 5.3 11.4 4.1 12.6 3 12.5 2Z"/></svg>';
+    const ICON_FIRE_SM = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 2c.3 2.2-.6 3.6-2 5-1.6 1.6-3 3.3-3 5.8a4.5 4.5 0 0 0 9 0c0-1-.3-1.8-.7-2.6.9.5 1.7 1.4 1.7 3.1a5.5 5.5 0 0 1-11 0C6.5 9.3 8.7 7 10.3 5.3 11.4 4.1 12.6 3 12.5 2Z"/></svg>';
 
     const CLOSED_STATUSES = ['Closed (Deal)', 'Lost (Batal)'];
 
@@ -1072,20 +1649,35 @@
     }
 
     // Render riwayat catatan (array 'notes') secara kronologis (dari yang terlama ke terbaru).
+    // Catatan yang ditandai isHidden:true oleh Marketing tetap tampil penuh untuk role
+    // Marketing (pemilik lead), tapi disamarkan dengan keterangan generik untuk role
+    // CS/Admin (Panel SPV/CS) — teks aslinya tidak pernah dikirim ke tampilan SPV/CS.
     function renderHistoryList(lead) {
       const notes = Array.isArray(lead.notes) ? lead.notes.slice() : [];
       if (!notes.length) {
         return '<p class="text-sm text-[#5c6b62]">Belum ada riwayat update.</p>';
       }
+      const isMarketingViewer = !!currentUser && currentUser.role === 'Marketing';
       notes.sort(function (a, b) { return toJsDate(a.date) - toJsDate(b.date); });
       return notes.map(function (n) {
         const tgl = formatDateID(toJsDate(n.date));
-        const noteText = n.note
-          ? '<p class="text-sm text-[var(--ink)] mt-1">' + escapeHtml(n.note) + '</p>'
-          : '<p class="text-sm text-[#9aa79f] italic mt-1">Tanpa catatan tambahan</p>';
+        const isHiddenFromViewer = !!n.isHidden && !isMarketingViewer;
+        let noteText;
+        if (isHiddenFromViewer) {
+          noteText = '<p class="note-hidden-placeholder">&#128274; Catatan disembunyikan oleh Marketing</p>';
+        } else if (n.note) {
+          noteText = '<p class="text-sm text-[var(--ink)] mt-1">' + escapeHtml(n.note) + '</p>';
+        } else {
+          noteText = '<p class="text-sm text-[#9aa79f] italic mt-1">Tanpa catatan tambahan</p>';
+        }
+        // Penanda kecil "Hidden" hanya ditampilkan ke Marketing, sebagai pengingat
+        // bahwa catatan ini tidak terlihat oleh SPV/CS.
+        const hiddenTag = (n.isHidden && isMarketingViewer)
+          ? ' <span class="note-hidden-tag">&#128274; Hidden</span>'
+          : '';
         return '<div class="border-b border-[var(--line)] pb-3 mb-3 last:border-b-0 last:mb-0 last:pb-0">' +
           '<div class="flex items-center justify-between gap-2 flex-wrap">' +
-            '<span class="status-pill">' + escapeHtml(n.status) + '</span>' +
+            '<span class="inline-flex items-center gap-1.5 flex-wrap"><span class="status-pill">' + escapeHtml(n.status) + '</span>' + hiddenTag + '</span>' +
             '<span class="text-xs text-[#5c6b62]">' + tgl + '</span>' +
           '</div>' +
           noteText +
@@ -1532,27 +2124,34 @@
         });
       }
 
-      tbody.innerHTML = list.map(function (l) {
-        const tanggal = formatDateID(toJsDate(l.createdAt));
-        const jadwalFollowUp = formatDateID(toJsDate(l.nextFollowUpDate || l.lastUpdated || l.createdAt));
-        const sla = computeSla(l);
-        const safeId = escapeHtml(l.id);
-        const isSelected = csSelectMode && csSelectedIds.has(l.id);
-        const rowClick = csSelectMode
-          ? "toggleCsLeadSelection('" + safeId + "')"
-          : "openDetailModal('" + safeId + "')";
-        const checkTd = csSelectMode
-          ? '<td class="px-4 sm:px-5 py-3"><div class="lead-select-check' + (isSelected ? ' checked' : '') + '" aria-hidden="true"></div></td>'
-          : '';
-        return '<tr class="cursor-pointer' + (isSelected ? ' bg-[#eaf4ee]' : '') + '" onclick="' + rowClick + '">' +
-          checkTd +
-          '<td class="px-4 sm:px-5 py-3 text-sm whitespace-nowrap">' + tanggal + '</td>' +
-          '<td class="px-4 sm:px-5 py-3 text-sm font-medium">' + escapeHtml(l.buyerName) + '</td>' +
-          '<td class="px-4 sm:px-5 py-3 text-sm">' + escapeHtml(l.project) + '</td>' +
-          '<td class="px-4 sm:px-5 py-3 text-sm whitespace-nowrap">' + jadwalFollowUp + '</td>' +
-          '<td class="px-4 sm:px-5 py-3"><span class="sla-pill sla-' + sla + '">' + escapeHtml(l.status) + '</span></td>' +
-          '</tr>';
-      }).join('');
+      // Filter hanya menyaring baris yang ditampilkan; data asli (allLeadsData) dan seleksi mode "Pilih" tetap utuh.
+      const filteredList = applyLeadFilters(list, csFilterState);
+
+      if (!filteredList.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 sm:px-5 py-6 text-sm text-[#5c6b62] text-center">Tidak ada lead yang cocok dengan filter.</td></tr>';
+      } else {
+        tbody.innerHTML = filteredList.map(function (l) {
+          const tanggal = formatDateID(toJsDate(l.createdAt));
+          const jadwalFollowUp = formatDateID(toJsDate(l.nextFollowUpDate || l.lastUpdated || l.createdAt));
+          const sla = computeSla(l);
+          const safeId = escapeHtml(l.id);
+          const isSelected = csSelectMode && csSelectedIds.has(l.id);
+          const rowClick = csSelectMode
+            ? "toggleCsLeadSelection('" + safeId + "')"
+            : "openDetailModal('" + safeId + "')";
+          const checkTd = csSelectMode
+            ? '<td class="px-4 sm:px-5 py-3"><div class="lead-select-check' + (isSelected ? ' checked' : '') + '" aria-hidden="true"></div></td>'
+            : '';
+          return '<tr class="cursor-pointer' + (isSelected ? ' bg-[#eaf4ee]' : '') + '" onclick="' + rowClick + '">' +
+            checkTd +
+            '<td class="px-4 sm:px-5 py-3 text-sm whitespace-nowrap">' + tanggal + '</td>' +
+            '<td class="px-4 sm:px-5 py-3 text-sm font-medium"><span class="inline-flex items-center gap-1.5 flex-wrap">' + escapeHtml(l.buyerName) + (l.isHot ? '<span class="hot-badge hot-badge-sm">' + ICON_FIRE_SM + 'Hot</span>' : '') + '</span></td>' +
+            '<td class="px-4 sm:px-5 py-3 text-sm">' + escapeHtml(l.project) + '</td>' +
+            '<td class="px-4 sm:px-5 py-3 text-sm whitespace-nowrap">' + jadwalFollowUp + '</td>' +
+            '<td class="px-4 sm:px-5 py-3"><span class="sla-pill sla-' + sla + '">' + escapeHtml(l.status) + '</span></td>' +
+            '</tr>';
+        }).join('');
+      }
 
       const checkHeader = document.getElementById('detailTableCheckHeader');
       if (checkHeader) checkHeader.classList.toggle('hidden', !csSelectMode);
@@ -1788,6 +2387,7 @@
           csNote: csNote, // catatan/keterangan opsional dari CS untuk marketing, diisi saat input lead baru
           isAdLead: isAdLead, // penanda lead dari Tab Iklan, dipakai untuk hitung giliran rotasi berikutnya
           status: 'New',
+          isHot: false, // tag "Hot Prospek": default belum ditandai, bisa diubah lewat kartu/modal detail
           nextFollowUpDate: defaultNextFollowUp(), // default: 3 hari dari hari ini
           createdAt: FieldValue.serverTimestamp(),
           lastUpdated: FieldValue.serverTimestamp()
@@ -1863,7 +2463,16 @@
         return;
       }
 
-      container.innerHTML = marketingLeadsData.map(function (lead) {
+      // Filter hanya menyaring tampilan; data asli (marketingLeadsData) dan seleksi mode "Pilih" tetap utuh.
+      const filteredMarketingLeads = applyLeadFilters(marketingLeadsData, marketingFilterState);
+
+      if (!filteredMarketingLeads.length) {
+        container.innerHTML = '<p class="text-sm text-[#5c6b62] text-center py-8">Tidak ada lead yang cocok dengan filter.</p>';
+        updateSelectBar();
+        return;
+      }
+
+      container.innerHTML = filteredMarketingLeads.map(function (lead) {
         const sla = computeSla(lead);
         const safeId = escapeHtml(lead.id);
         const isSelected = marketingSelectMode && marketingSelectedIds.has(lead.id);
@@ -1876,15 +2485,19 @@
         const actionsHtml = marketingSelectMode ? '' :
           '<div class="mt-3 flex items-center gap-2">' +
             '<a href="' + waLink(lead.waNumber) + '" target="_blank" rel="noopener" class="icon-btn" aria-label="Chat WhatsApp" onclick="event.stopPropagation()">' + ICON_WA + '</a>' +
+            '<button type="button" class="icon-btn hot-toggle-icon-btn' + (lead.isHot ? ' hot-active' : '') + '" aria-label="' + (lead.isHot ? 'Batalkan tag Hot Prospek' : 'Tandai Hot Prospek') + '" aria-pressed="' + (lead.isHot ? 'true' : 'false') + '" onclick="event.stopPropagation(); toggleHotProspek(\'' + safeId + '\', ' + (lead.isHot ? 'true' : 'false') + ')">' + ICON_FIRE + '</button>' +
             '<button type="button" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1" onclick="event.stopPropagation(); openModal(\'' + safeId + '\')">Update Status</button>' +
           '</div>';
-        return '<article class="lead-card edge-' + sla + ' p-4 cursor-pointer' + (isSelected ? ' lead-card-selected' : '') + '" data-id="' + safeId + '" onclick="' + cardClick + '">' +
+        return '<article class="lead-card edge-' + sla + (lead.isHot ? ' is-hot' : '') + ' p-4 cursor-pointer' + (isSelected ? ' lead-card-selected' : '') + '" data-id="' + safeId + '" onclick="' + cardClick + '">' +
           '<div class="flex items-start justify-between gap-3">' +
             '<div class="flex items-start gap-2.5">' + checkboxHtml +
               '<div><h2 class="font-bold text-[15px]">' + escapeHtml(lead.buyerName) + '</h2>' +
               '<p class="text-sm text-[#5c6b62] mt-0.5">' + escapeHtml(lead.project) + '</p></div>' +
             '</div>' +
-            '<span class="sla-pill sla-' + sla + ' whitespace-nowrap">' + escapeHtml(lead.status) + '</span>' +
+            '<div class="flex flex-col items-end gap-1.5">' +
+              '<span class="sla-pill sla-' + sla + ' whitespace-nowrap">' + escapeHtml(lead.status) + '</span>' +
+              (lead.isHot ? '<span class="hot-badge hot-badge-sm">' + ICON_FIRE_SM + 'Hot Prospek</span>' : '') +
+            '</div>' +
           '</div>' +
           '<p class="text-xs text-[#6b7970] mt-2">' + slaCaption(lead) + '</p>' +
           '<div class="mt-3 pt-3 border-t border-[var(--line)] flex items-center gap-4 text-sm">' +
@@ -1984,7 +2597,6 @@
       const statusSelect = document.getElementById('statusSelect');
       const optionExists = Array.from(statusSelect.options).some(function (o) { return o.value === lead.status; });
       statusSelect.value = optionExists ? lead.status : statusSelect.options[0].value;
-      document.getElementById('followUpNote').value = '';
 
       // Field jadwal follow-up berikutnya: otomatis terisi 3 hari dari hari ini saat modal dibuka,
       // tapi tetap bisa diubah bebas oleh marketing lewat kalender sebelum disimpan.
@@ -2022,6 +2634,7 @@
       document.getElementById('detailModalProject').textContent = lead.project;
       document.getElementById('detailModalWa').textContent = lead.waNumber;
       document.getElementById('detailModalSource').textContent = lead.adSource;
+      document.getElementById('detailModalCreatedAt').textContent = formatDateID(toJsDate(lead.createdAt));
       document.getElementById('detailModalFollowUp').textContent =
         formatDateID(toJsDate(lead.nextFollowUpDate || lead.lastUpdated || lead.createdAt));
       document.getElementById('detailModalWaLink').href = waLink(lead.waNumber);
@@ -2039,15 +2652,37 @@
       statusBadge.textContent = lead.status;
       statusBadge.className = 'sla-pill sla-' + computeSla(lead) + ' whitespace-nowrap';
 
+      updateDetailModalHotUI(!!lead.isHot);
+
       document.getElementById('detailModalHistory').innerHTML = renderHistoryList(lead);
 
       // Tombol "Update Status" dari Detail Modal hanya untuk role Marketing (SPV/Admin hanya memantau).
       const updateBtn = document.getElementById('detailModalUpdateBtn');
-      if (currentUser && currentUser.role === 'Marketing') {
+      const isMarketingUser = !!currentUser && currentUser.role === 'Marketing';
+      if (isMarketingUser) {
         updateBtn.classList.remove('hidden');
       } else {
         updateBtn.classList.add('hidden');
       }
+
+      // Catatan Pribadi Marketing: tombol pemicu "+ Tulis Catatan Baru" hanya
+      // ditampilkan untuk role Marketing; kotak input lengkap selalu dimulai
+      // dalam keadaan tertutup (collapsed, tanpa transisi) setiap modal dibuka,
+      // supaya tampilan tetap ringkas di awal. Field ('privateNote' +
+      // 'privateNoteHidden') diisi ulang dengan nilai tersimpan terakhir,
+      // supaya saat kotak dibuka selalu menampilkan versi terbaru dan bisa
+      // langsung diedit (lihat savePrivateNote()).
+      const privateNoteAddBtn = document.getElementById('privateNoteAddBtn');
+      const privateNoteTriggerDot = document.getElementById('privateNoteTriggerDot');
+      const privateNoteInput = document.getElementById('privateNoteInput');
+      const privateNoteStatus = document.getElementById('privateNoteStatus');
+      if (privateNoteAddBtn) privateNoteAddBtn.classList.toggle('hidden', !isMarketingUser);
+      if (privateNoteInput) privateNoteInput.value = lead.privateNote || '';
+      if (privateNoteStatus) privateNoteStatus.classList.remove('is-visible');
+      // Titik penanda kecil di tombol pemicu: menandakan sudah ada catatan tersimpan.
+      if (privateNoteTriggerDot) privateNoteTriggerDot.classList.toggle('hidden', !lead.privateNote);
+      setPrivateNoteHiddenState(!!lead.privateNoteHidden);
+      collapsePrivateNoteCard();
 
       // Tombol "Hapus Lead" di Detail Modal: khusus CS/Admin (bisa hapus lead siapa pun).
       // Untuk role Marketing, hapus lead sekarang dilakukan lewat mode "Pilih" di daftar kartu,
@@ -2086,17 +2721,17 @@
     function saveUpdate() {
       if (!currentModalLeadId) { closeModal(); return; }
       const newStatus = document.getElementById('statusSelect').value;
-      const note = document.getElementById('followUpNote').value.trim();
       const nextFollowUpDate = fromDateInputValue(document.getElementById('nextFollowUpDate').value);
       const saveBtn = document.querySelector('#modalBox button[onclick="saveUpdate()"]');
 
       // Setiap update status ditambahkan sebagai entri baru ke riwayat (array 'notes'), tidak menimpa yang lama.
       // Catatan: 'date' di sini pakai Date lokal (bukan serverTimestamp), karena Firestore tidak
-      // mengizinkan FieldValue.serverTimestamp() di dalam elemen array.
+      // mengizinkan FieldValue.serverTimestamp() di dalam elemen array. Input catatan bebas (dengan
+      // toggle 'Hidden') sekarang ditangani terpisah lewat Card Catatan Lead di Modal Detail
+      // (lihat saveLeadNote()), sehingga entri di sini murni mencatat perubahan status.
       const historyEntry = {
         date: new Date(),
-        status: newStatus,
-        note: note
+        status: newStatus
       };
 
       const updatePayload = {
@@ -2119,6 +2754,130 @@
           if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Simpan Update'; }
         });
       // onSnapshot pada Panel Marketing & Panel CS/Admin otomatis merefresh tampilan & riwayat.
+    }
+
+    // ------------------------------------------------------------
+    // Catatan Pribadi Marketing (Modal Detail, khusus role Marketing):
+    // satu kotak teks tunggal yang menyimpan (menimpa/overwrite) field
+    // tunggal 'privateNote' + 'privateNoteHidden' pada dokumen lead — TIDAK
+    // menambah entri baru ke array 'notes'. Karena itu catatan ini:
+    //   1) tidak pernah muncul di Riwayat Follow-Up / renderHistoryList(),
+    //   2) selalu bisa direvisi/diedit ulang kapan saja (isi lama otomatis
+    //      tertimpa oleh isi baru saat disimpan lagi, tidak menumpuk),
+    //   3) murni pengingat pribadi marketing, tidak tampil ke Panel SPV/CS —
+    //      Card-nya sendiri sudah disembunyikan total untuk role selain
+    //      Marketing (lihat openDetailModal()); toggle 'Hidden' menyimpan
+    //      status privateNoteHidden:true sebagai pengaman tambahan.
+    // Kotak input defaultnya tertutup (collapsed, opsional) — dibuka lewat
+    // tombol "+ Tulis Catatan Baru" (openPrivateNoteCard) dengan animasi
+    // slide-down/fade-in, dan bisa ditutup lagi lewat tombol "Batal"
+    // (cancelPrivateNoteCard) tanpa menyimpan perubahan apa pun — isi
+    // textarea & toggle Hidden dikembalikan ke nilai tersimpan terakhir.
+    // ------------------------------------------------------------
+    function openPrivateNoteCard() {
+      const addBtn = document.getElementById('privateNoteAddBtn');
+      const panel = document.getElementById('privateNotePanel');
+      if (addBtn) addBtn.classList.add('hidden');
+      if (panel) {
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+        panel.classList.add('private-note-panel-open');
+      }
+      const input = document.getElementById('privateNoteInput');
+      if (input) setTimeout(function () { input.focus(); }, 120);
+    }
+
+    // Menutup kotak catatan (animasi slide-up/fade-out) tanpa menyimpan apa
+    // pun (tombol "Batal"): isi textarea & toggle Hidden dikembalikan ke
+    // nilai tersimpan terakhir pada lead ini, supaya perubahan yang belum
+    // disimpan tidak nyangkut kalau kotak dibuka lagi nanti. Juga dipakai
+    // untuk merapikan tampilan otomatis setelah catatan berhasil disimpan.
+    function cancelPrivateNoteCard() {
+      const lead = currentDetailLeadId ? findLeadById(currentDetailLeadId) : null;
+      const input = document.getElementById('privateNoteInput');
+      if (input) input.value = lead ? (lead.privateNote || '') : '';
+      setPrivateNoteHiddenState(lead ? !!lead.privateNoteHidden : false);
+
+      const panel = document.getElementById('privateNotePanel');
+      const addBtn = document.getElementById('privateNoteAddBtn');
+      if (panel) {
+        panel.style.maxHeight = '0px';
+        panel.classList.remove('private-note-panel-open');
+      }
+      // addBtn hanya tampil kembali untuk role Marketing — visibilitasnya
+      // sendiri (berdasarkan role) sudah diatur oleh openDetailModal().
+      if (addBtn) addBtn.classList.remove('hidden');
+    }
+
+    // Menutup kotak catatan secara instan tanpa animasi — dipakai saat Modal
+    // Detail baru dibuka (untuk lead mana pun), supaya tidak ada transisi
+    // "kedip" yang tidak perlu sebelum modal ditampilkan, dan supaya kotak
+    // selalu mulai dalam keadaan tertutup/opsional sesuai permintaan.
+    function collapsePrivateNoteCard() {
+      const panel = document.getElementById('privateNotePanel');
+      if (!panel) return;
+      panel.style.maxHeight = '0px';
+      panel.classList.remove('private-note-panel-open');
+    }
+
+    // Set tampilan tombol toggle "Hidden" sekaligus variabel state-nya —
+    // dipanggil saat modal dibuka (mengikuti nilai tersimpan) maupun saat
+    // pengguna mengklik tombolnya sendiri (togglePrivateNoteHidden()).
+    function setPrivateNoteHiddenState(isHidden) {
+      privateNoteHidden = !!isHidden;
+      const btn = document.getElementById('privateNoteHiddenBtn');
+      if (!btn) return;
+      btn.classList.toggle('private-note-hidden-active', privateNoteHidden);
+      btn.setAttribute('aria-pressed', String(privateNoteHidden));
+    }
+
+    function togglePrivateNoteHidden() {
+      setPrivateNoteHiddenState(!privateNoteHidden);
+    }
+
+    // Boleh disimpan kosong (mengosongkan pengingat yang sudah tidak relevan).
+    function savePrivateNote() {
+      if (!currentDetailLeadId) return;
+      const input = document.getElementById('privateNoteInput');
+      const noteText = input ? input.value.trim() : '';
+      const isHidden = privateNoteHidden;
+      const saveBtn = document.getElementById('privateNoteSaveBtn');
+      const statusEl = document.getElementById('privateNoteStatus');
+
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan...'; }
+      if (statusEl) statusEl.classList.remove('is-visible');
+
+      db.collection('leads').doc(currentDetailLeadId).update({
+        privateNote: noteText,
+        privateNoteHidden: isHidden
+      })
+        .then(function () {
+          // Sinkronkan juga ke cache lokal lead (allLeadsData/marketingLeadsData) supaya
+          // jika modal dibuka lagi tanpa menunggu onSnapshot, nilai terbaru tetap tampil.
+          const lead = findLeadById(currentDetailLeadId);
+          if (lead) {
+            lead.privateNote = noteText;
+            lead.privateNoteHidden = isHidden;
+          }
+          const triggerDot = document.getElementById('privateNoteTriggerDot');
+          if (triggerDot) triggerDot.classList.toggle('hidden', !noteText);
+          if (statusEl) {
+            statusEl.textContent = 'Tersimpan';
+            statusEl.classList.add('is-visible');
+            setTimeout(function () { statusEl.classList.remove('is-visible'); }, 2000);
+          }
+          // Setelah tersimpan, kotak input ditutup kembali (collapsed, dengan
+          // animasi yang sama seperti tombol "Batal") supaya tampilan Modal
+          // Detail tetap ringkas — sesuai sifat catatan ini yang opsional.
+          cancelPrivateNoteCard();
+        })
+        .catch(function (err) {
+          alert('Gagal menyimpan catatan pribadi: ' + err.message);
+        })
+        .finally(function () {
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Simpan Catatan'; }
+        });
+      // Field ini sengaja TIDAK ditampilkan di Riwayat Follow-Up (renderHistoryList()
+      // hanya membaca array 'notes'), sehingga riwayat tetap bersih.
     }
 
     // ------------------------------------------------------------
