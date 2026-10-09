@@ -444,6 +444,7 @@
     transition:background 0.15s ease;
   }
   .wa-menu-item:hover{ background:#faf9f5; }
+  .wa-menu-names{ display:block; margin-top:0.15rem; font-size:0.6875rem; font-weight:400; line-height:1.35; color:#8a968f; }
 
   /* Notifikasi: bell, badge, dropdown riwayat, toast in-app */
   .notif-btn{ position:relative; display:flex; align-items:center; }
@@ -599,14 +600,14 @@
           <span class="hidden sm:inline-flex status-pill">Sesi Aktif</span>
 
           <div class="wa-menu">
-            <button type="button" onclick="toggleWaMenu()" class="btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5" title="Kirim rekap lead follow-up hari ini ke marketing via WhatsApp">
-              Kirim Rekap WA
+            <button type="button" onclick="toggleWaMenu()" class="btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5" title="Kirim pengingat lead follow-up hari ini ke marketing via WhatsApp">
+              Kirim Pengingat
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#f6f4ef" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <div id="waMenuDropdown" class="notif-dropdown hidden" style="width:15rem;">
+            <div id="waMenuDropdown" class="notif-dropdown hidden" style="width:17rem;">
               <div class="py-1.5">
-                <button type="button" onclick="sendRekapWA('group1')" class="wa-menu-item">Rekap Marketing 1-6</button>
-                <button type="button" onclick="sendRekapWA('group2')" class="wa-menu-item">Rekap Marketing 7-11</button>
+                <button type="button" onclick="sendRekapWA('group1')" class="wa-menu-item">Marketing Grup A<span id="waMenuNamesGroup1" class="wa-menu-names"></span></button>
+                <button type="button" onclick="sendRekapWA('group2')" class="wa-menu-item">Marketing Grup B<span id="waMenuNamesGroup2" class="wa-menu-names"></span></button>
               </div>
             </div>
           </div>
@@ -1156,6 +1157,21 @@
             Simpan Update
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL REKAP WA: daftar tombol kirim per marketing (Panel CS/SPV) -->
+  <!-- ============================================================ -->
+  <div id="rekapModalOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-40 flex hidden items-center justify-center px-4" onclick="closeRekapModal()" style="transition:opacity 0.2s ease;">
+    <div id="rekapModalBox" class="bg-white rounded-2xl p-5 w-full max-w-md opacity-0 scale-95 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()" style="transition:opacity 0.2s ease, transform 0.2s ease;">
+      <h3 id="rekapModalTitle" class="font-bold text-lg mb-1">Kirim Pengingat</h3>
+      <p class="text-sm text-[#5c6b62] mb-4">Klik <b>Kirim</b> pada satu nama untuk membuka chat WhatsApp berisi pengingat follow-up hari ini, lalu tekan kirim di WhatsApp. Nama yang sudah diklik diberi tanda &#10003; (kosong lagi besok).</p>
+      <div id="rekapModalList" class="space-y-2"></div>
+      <div class="flex items-center gap-3 mt-4">
+        <button type="button" onclick="resetRekapSent()" class="cancel-btn font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">Reset Centang</button>
+        <button type="button" onclick="closeRekapModal()" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">Tutup</button>
       </div>
     </div>
   </div>
@@ -1953,21 +1969,98 @@
         lines.join('\n') + '\n\nMohon segera ditindaklanjuti ya. Terima kasih!';
     }
 
-    // Buka tab WhatsApp Web beruntun (jeda 500ms/marketing) untuk seluruh
-    // anggota kelompok, masing-masing dengan pesan rekap yang sudah terisi.
+    // Rekap WA per marketing: menu "Kirim Rekap WA" membuka daftar nama; setiap tombol "Kirim"
+    // membuka SATU chat WhatsApp berisi rekap lead jatuh tempo marketing tersebut. Satu klik = satu
+    // tab, jadi tidak diblokir browser (berbeda dengan membuka banyak tab sekaligus). Nama yang sudah
+    // dikirimi ditandai centang; tanda centang otomatis mulai kosong lagi di hari berikutnya.
+    let rekapActiveGroup = null;
+    let rekapSentMemory = {};   // cadangan jika penyimpanan browser tidak tersedia: { 'yyyy-mm-dd': [nama, ...] }
+
+    function rekapSentKey() { return 'rekapSent:' + toDateInputValue(new Date()); }
+
+    function getRekapSent() {
+      try {
+        return JSON.parse(localStorage.getItem(rekapSentKey()) || '[]');
+      } catch (e) {
+        return rekapSentMemory[rekapSentKey()] || [];
+      }
+    }
+
+    function saveRekapSent(list) {
+      rekapSentMemory[rekapSentKey()] = list;
+      try { localStorage.setItem(rekapSentKey(), JSON.stringify(list)); } catch (e) { /* abaikan */ }
+    }
+
+    (function fillWaMenuNames() {
+      ['group1', 'group2'].forEach(function (key) {
+        const el = document.getElementById('waMenuNames' + key.charAt(0).toUpperCase() + key.slice(1));
+        if (el) el.textContent = (MARKETING_GROUPS[key] || []).join(', ');
+      });
+    })();
+
     function sendRekapWA(groupKey) {
       closeWaMenu();
-      const names = MARKETING_GROUPS[groupKey];
-      if (!names || !names.length) return;
-      names.forEach(function (name, i) {
-        setTimeout(function () {
-          const leads = leadsDueTodayFor(name);
-          const message = buildRekapMessage(name, leads);
-          const number = MARKETING_WA_NUMBERS[name] || '';
-          const url = 'https://wa.me/' + toWaDigits(number) + '?text=' + encodeURIComponent(message);
-          window.open(url, '_blank');
-        }, i * 500);
-      });
+      if (!MARKETING_GROUPS[groupKey]) return;
+      rekapActiveGroup = groupKey;
+      document.getElementById('rekapModalTitle').textContent =
+        'Marketing Grup ' + (groupKey === 'group1' ? 'A' : 'B');
+      renderRekapList();
+      const overlay = document.getElementById('rekapModalOverlay');
+      const box = document.getElementById('rekapModalBox');
+      overlay.classList.remove('hidden', 'pointer-events-none');
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }
+
+    function closeRekapModal() {
+      const overlay = document.getElementById('rekapModalOverlay');
+      const box = document.getElementById('rekapModalBox');
+      overlay.style.opacity = '0';
+      box.style.opacity = '0';
+      box.style.transform = 'scale(0.95)';
+      overlay.classList.add('pointer-events-none');
+      setTimeout(function () { overlay.classList.add('hidden'); }, 200);
+      rekapActiveGroup = null;
+    }
+
+    function renderRekapList() {
+      const listEl = document.getElementById('rekapModalList');
+      const names = MARKETING_GROUPS[rekapActiveGroup] || [];
+      const sent = getRekapSent();
+      listEl.innerHTML = names.map(function (name) {
+        const count = leadsDueTodayFor(name).length;
+        const numOk = validateWaNumber(MARKETING_WA_NUMBERS[name] || '') === '';
+        const isSent = sent.indexOf(name) !== -1;
+        const safe = escapeHtml(name);
+        const info = !numOk ? 'Nomor WA belum valid'
+          : (count ? count + ' lead jatuh tempo' : 'Tidak ada lead jatuh tempo');
+        return '<div class="flex items-center justify-between gap-3 border border-[var(--line)] rounded-xl px-3.5 py-2.5">' +
+          '<div><p class="font-semibold text-sm">' + safe +
+            (isSent ? ' <span class="text-[var(--green-dark)]" title="Sudah dikirim">&#10003;</span>' : '') + '</p>' +
+            '<p class="text-xs text-[#5c6b62]">' + info + '</p></div>' +
+          '<button type="button"' + (numOk ? '' : ' disabled') + ' onclick="sendRekapTo(\'' + safe + '\')" ' +
+            'class="btn-primary text-white font-semibold text-xs px-3.5 py-2 rounded-lg">' +
+            (isSent ? 'Kirim Lagi' : 'Kirim') + '</button>' +
+        '</div>';
+      }).join('');
+    }
+
+    function sendRekapTo(name) {
+      const number = MARKETING_WA_NUMBERS[name] || '';
+      if (validateWaNumber(number)) return;
+      const message = buildRekapMessage(name, leadsDueTodayFor(name));
+      window.open('https://wa.me/' + toWaDigits(number) + '?text=' + encodeURIComponent(message), '_blank');
+      const sent = getRekapSent();
+      if (sent.indexOf(name) === -1) sent.push(name);
+      saveRekapSent(sent);
+      renderRekapList();
+    }
+
+    function resetRekapSent() {
+      saveRekapSent([]);
+      renderRekapList();
     }
 
     function toggleWaMenu() {
