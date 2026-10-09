@@ -598,10 +598,6 @@
         <div class="flex items-center gap-3">
           <span class="hidden sm:inline-flex status-pill">Sesi Aktif</span>
 
-          <button type="button" onclick="triggerTestNotification()" class="btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg" title="Simulasikan notifikasi baru untuk uji coba badge/toast/dropdown">
-            Test Kirim Notif
-          </button>
-
           <div class="wa-menu">
             <button type="button" onclick="toggleWaMenu()" class="btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5" title="Kirim rekap lead follow-up hari ini ke marketing via WhatsApp">
               Kirim Rekap WA
@@ -1147,7 +1143,10 @@
         </select>
 
         <label class="field-label" for="nextFollowUpDate">Jadwal Follow-Up Berikutnya</label>
-        <input type="date" id="nextFollowUpDate" class="modal-input mb-5">
+        <input type="date" id="nextFollowUpDate" class="modal-input mb-4">
+
+        <label class="field-label" for="updateNote">Catatan Update <span class="text-[#a3352c]">*</span></label>
+        <textarea id="updateNote" rows="3" maxlength="500" class="modal-input mb-5" style="resize:vertical;" placeholder="Tulis hasil follow-up, mis. buyer minta survei hari Sabtu"></textarea>
 
         <div class="flex items-center gap-3">
           <button type="button" onclick="closeModal()" class="cancel-btn font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">
@@ -1330,6 +1329,8 @@
     // ------------------------------------------------------------
     let currentUser = null;          // { uid, email, role, name }
     let unsubscribeLeads = null;     // handle onSnapshot aktif (CS/Admin atau Marketing)
+    let unsubscribeRotation = null;  // handle onSnapshot counter rotasi iklan (settings/adRotation)
+    let adRotationCounter = null;    // jumlah lead iklan yang sudah dibagikan; null = dokumen counter belum ada/belum terbaca
     let allLeadsData = [];           // dipakai role CS/Admin (semua lead)
     let marketingLeadsData = [];     // dipakai role Marketing (lead miliknya saja)
     // Filter pencarian lead (Status / Proyek / teks nama & no. WA / rentang tanggal / kategori
@@ -1799,17 +1800,17 @@
     // Nomor WhatsApp masing-masing marketing (tujuan pengiriman rekap).
     // PENTING: ganti nomor placeholder di bawah ini dengan nomor WA asli tiap marketing.
     const MARKETING_WA_NUMBERS = {
-      Haris: '08993518538',
-      Nina: '089514999858',
-      Rizky: '0812xxxxxxx',
-      Abid: '0812xxxxxxx',
-      Maulana: '0812xxxxxxx',
-      Nanda: '0812xxxxxxx',
-      Nur: '0812xxxxxxx',
-      Eko: '0812xxxxxxx',
-      Ferdi: '0812xxxxxxx',
-      Reza: '0812xxxxxxx',
-      Ratna: '0812xxxxxxx'
+      Haris: '+62 812-2588-3721',
+      Nina: '+62 822-3232-2579',
+      Rizky: '+62 812-1721-3207',
+      Abid: '+62 821-3975-8710',
+      Maulana: '+62 821-3210-5411',
+      Nanda: '+62 822-2872-0811',
+      Nur: '+62 812-3053-0987',
+      Eko: '+62 812-3238-6549',
+      Ferdi: '+62 858-5079-1877',
+      Reza: '+62 852-5853-5583',
+      Ratna: '+62 895-8041-69200'
     };
 
     function escapeHtml(str) {
@@ -1911,6 +1912,22 @@
       if (digits.startsWith('0')) digits = '62' + digits.slice(1);
       else if (!digits.startsWith('62')) digits = '62' + digits;
       return digits;
+    }
+
+    // Validasi nomor WA Indonesia: terima 08xx / +628xx / 628xx (boleh pakai spasi/strip).
+    // Nomor seluler valid = 62 + 8 + 8-11 digit lagi. Mengembalikan pesan error, atau '' jika valid.
+    function validateWaNumber(raw) {
+      const digits = toWaDigits(raw);
+      if (!/^628\d{8,11}$/.test(digits)) {
+        return 'Nomor WhatsApp tidak valid. Gunakan format 08xx... atau +62 8xx... (10-13 digit, tanpa huruf).';
+      }
+      return '';
+    }
+
+    // Cari lead lain dengan nomor WA yang sama (dibandingkan setelah dinormalkan ke format 62...).
+    function findDuplicateLead(list, raw) {
+      const d = toWaDigits(raw);
+      return (list || []).find(function (l) { return toWaDigits(l.waNumber) === d; }) || null;
     }
 
     // Lead milik satu marketing yang belum Closed/Lost dan jadwal
@@ -2366,6 +2383,11 @@
         unsubscribeLeads();
         unsubscribeLeads = null;
       }
+      if (typeof unsubscribeRotation === 'function') {
+        unsubscribeRotation();
+        unsubscribeRotation = null;
+      }
+      adRotationCounter = null;
       allLeadsData = [];
       marketingLeadsData = [];
       currentDetailMarketing = null;
@@ -2394,6 +2416,13 @@
     // ------------------------------------------------------------
     function startLeadsListenerCsAdmin() {
       cleanupLeadsListener();
+      // Counter giliran rotasi iklan (dokumen terpisah, tidak terpengaruh tambah/hapus lead).
+      unsubscribeRotation = db.collection('settings').doc('adRotation').onSnapshot(function (snap) {
+        adRotationCounter = snap.exists ? (Number(snap.data().counter) || 0) : null;
+        renderAdRotationInfo();
+      }, function (err) {
+        console.error('Gagal memuat counter rotasi:', err);
+      });
       unsubscribeLeads = db.collection('leads')
         .orderBy('createdAt', 'desc')
         .onSnapshot(function (snapshot) {
@@ -2587,9 +2616,13 @@
     // jumlah lead yang sebelumnya masuk lewat Tab Iklan (isAdLead === true) menentukan
     // posisi giliran saat ini, sehingga selalu konsisten & real-time di semua CS/Admin
     // tanpa perlu counter/collection terpisah.
+    // Giliran dibaca dari counter tersimpan (settings/adRotation) supaya tidak bergeser saat lead dihapus.
+    // Jika counter belum ada (pemakaian pertama), dipakai hitungan lead iklan yang ada sebagai titik awal.
     function computeNextAdRotationMarketing() {
-      const adLeadCount = allLeadsData.filter(function (l) { return l.isAdLead === true; }).length;
-      return AD_ROTATION_LIST[adLeadCount % AD_ROTATION_LIST.length];
+      const count = (adRotationCounter !== null)
+        ? adRotationCounter
+        : allLeadsData.filter(function (l) { return l.isAdLead === true; }).length;
+      return AD_ROTATION_LIST[count % AD_ROTATION_LIST.length];
     }
 
     function renderAdRotationInfo() {
@@ -2702,10 +2735,15 @@
         const assignedTo = isAdLead ? computeNextAdRotationMarketing() : document.getElementById('assignedTo').value;
         if (!buyerName || !waNumber || !adSource || !project || !assignedTo) return;
 
+        const waError = validateWaNumber(waNumber);
+        if (waError) { alert(waError); return; }
+        const dupLead = findDuplicateLead(allLeadsData, waNumber);
+        if (dupLead && !confirm('Nomor ini sudah terdaftar atas nama "' + dupLead.buyerName + '" (marketing ' + (dupLead.assignedTo || '-') + ', status ' + (dupLead.status || '-') + ').\n\nTetap simpan sebagai lead baru?')) return;
+
         leadSubmitBtn.disabled = true;
         leadSubmitBtn.textContent = 'Menyimpan...';
 
-        db.collection('leads').add({
+        const newLeadData = {
           buyerName: buyerName,
           waNumber: waNumber,
           adSource: adSource,
@@ -2718,7 +2756,30 @@
           nextFollowUpDate: defaultNextFollowUp(), // default: 3 hari dari hari ini
           createdAt: FieldValue.serverTimestamp(),
           lastUpdated: FieldValue.serverTimestamp()
-        }).then(function () {
+        };
+
+        // Lead Tab Iklan: giliran diambil & counter dinaikkan dalam satu transaksi atomik bersama
+        // penyimpanan lead, sehingga dua CS yang submit bersamaan tidak mendapat marketing yang sama
+        // dan menghapus lead tidak menggeser giliran. Lead Tab Umum disimpan seperti biasa.
+        let savePromise;
+        if (isAdLead) {
+          const rotRef = db.collection('settings').doc('adRotation');
+          const newLeadRef = db.collection('leads').doc();
+          savePromise = db.runTransaction(function (tx) {
+            return tx.get(rotRef).then(function (snap) {
+              const counter = snap.exists
+                ? (Number(snap.data().counter) || 0)
+                : allLeadsData.filter(function (l) { return l.isAdLead === true; }).length;
+              newLeadData.assignedTo = AD_ROTATION_LIST[counter % AD_ROTATION_LIST.length];
+              tx.set(rotRef, { counter: counter + 1, updatedAt: FieldValue.serverTimestamp() });
+              tx.set(newLeadRef, newLeadData);
+            });
+          });
+        } else {
+          savePromise = db.collection('leads').add(newLeadData);
+        }
+
+        savePromise.then(function () {
           leadForm.reset();
           if (csInputMode === 'iklan') {
             document.getElementById('assignedTo').removeAttribute('required');
@@ -2733,7 +2794,7 @@
             waNumber: waNumber,
             adSource: adSource,
             project: project,
-            assignedTo: assignedTo,
+            assignedTo: newLeadData.assignedTo,
             csNote: csNote
           });
         }).catch(function (err) {
@@ -2928,6 +2989,7 @@
       // Field jadwal follow-up berikutnya: otomatis terisi 3 hari dari hari ini saat modal dibuka,
       // tapi tetap bisa diubah bebas oleh marketing lewat kalender sebelum disimpan.
       document.getElementById('nextFollowUpDate').value = toDateInputValue(defaultNextFollowUp());
+      document.getElementById('updateNote').value = '';
 
       const overlay = document.getElementById('modalOverlay');
       const box = document.getElementById('modalBox');
@@ -3024,6 +3086,15 @@
           errEl.classList.remove('hidden');
           return;
         }
+
+        const waError = validateWaNumber(waNumber);
+        if (waError) {
+          errEl.textContent = waError;
+          errEl.classList.remove('hidden');
+          return;
+        }
+        const dupLead = findDuplicateLead(marketingLeadsData, waNumber);
+        if (dupLead && !confirm('Nomor ini sudah ada di daftar lead kamu atas nama "' + dupLead.buyerName + '" (status ' + (dupLead.status || '-') + ').\n\nTetap simpan sebagai lead baru?')) return;
 
         const submitBtn = document.getElementById('selfLeadSubmitBtn');
         submitBtn.disabled = true;
@@ -3157,6 +3228,12 @@
       if (!currentModalLeadId) { closeModal(); return; }
       const newStatus = document.getElementById('statusSelect').value;
       const nextFollowUpDate = fromDateInputValue(document.getElementById('nextFollowUpDate').value);
+      const updateNote = document.getElementById('updateNote').value.trim();
+      if (!updateNote) {
+        alert('Catatan update wajib diisi supaya tim tahu perkembangan di tahap ini.');
+        document.getElementById('updateNote').focus();
+        return;
+      }
       const saveBtn = document.querySelector('#modalBox button[onclick="saveUpdate()"]');
 
       // Setiap update status ditambahkan sebagai entri baru ke riwayat (array 'notes'), tidak menimpa yang lama.
@@ -3166,7 +3243,8 @@
       // (lihat saveLeadNote()), sehingga entri di sini murni mencatat perubahan status.
       const historyEntry = {
         date: new Date(),
-        status: newStatus
+        status: newStatus,
+        note: updateNote
       };
 
       const updatePayload = {
