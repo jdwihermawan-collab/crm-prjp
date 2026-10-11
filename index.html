@@ -599,6 +599,10 @@
         <div class="flex items-center gap-3">
           <span class="hidden sm:inline-flex status-pill">Sesi Aktif</span>
 
+          <button type="button" id="csHistoryBtn" onclick="openRiwayatModal()" class="hidden btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5" title="Riwayat submit lead dari form Umum dan Iklan">
+            Riwayat
+          </button>
+
           <div class="wa-menu">
             <button type="button" onclick="toggleWaMenu()" class="btn-ghost text-xs sm:text-sm font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1.5" title="Kirim pengingat lead follow-up hari ini ke marketing via WhatsApp">
               Kirim Pengingat
@@ -1158,6 +1162,40 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL RIWAYAT SUBMIT LEAD (Panel CS): gabungan submit Input Lead Umum + Iklan -->
+  <!-- z-20 (di bawah modal Detail z-30) supaya klik baris membuka Detail di atasnya.  -->
+  <!-- ============================================================ -->
+  <div id="riwayatModalOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-20 flex hidden items-center justify-center px-4" onclick="closeRiwayatModal()" style="transition:opacity 0.2s ease;">
+    <div id="riwayatModalBox" class="bg-white rounded-2xl p-5 w-full max-w-lg opacity-0 scale-95 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()" style="transition:opacity 0.2s ease, transform 0.2s ease;">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h3 class="font-bold text-lg">Riwayat Submit Lead</h3>
+          <p class="text-sm text-[#5c6b62] mt-0.5">Submitan terbaru dari Input Lead Umum dan Iklan. Klik baris untuk melihat detail.</p>
+        </div>
+        <button type="button" onclick="closeRiwayatModal()" class="text-[#5c6b62] text-2xl leading-none px-1" aria-label="Tutup">&times;</button>
+      </div>
+
+      <div id="riwayatPresetWrap" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="field-label" for="riwayatDateFrom">Dari</label>
+          <input id="riwayatDateFrom" type="date" class="field-input" onchange="riwayatOnDateChange()">
+        </div>
+        <div>
+          <label class="field-label" for="riwayatDateTo">Sampai</label>
+          <input id="riwayatDateTo" type="date" class="field-input" onchange="riwayatOnDateChange()">
+        </div>
+      </div>
+
+      <div id="riwayatTypeWrap" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+      <p id="riwayatSummary" class="text-sm font-semibold text-[var(--green-dark)] mb-3"></p>
+      <div id="riwayatList" class="space-y-2"></div>
     </div>
   </div>
 
@@ -1816,7 +1854,7 @@
     // Nomor WhatsApp masing-masing marketing (tujuan pengiriman rekap).
     // PENTING: ganti nomor placeholder di bawah ini dengan nomor WA asli tiap marketing.
     const MARKETING_WA_NUMBERS = {
-      Haris: '+62 812-2588-3721',
+      Haris: '0887-2809-492',
       Nina: '+62 822-3232-2579',
       Rizky: '+62 812-1721-3207',
       Abid: '+62 821-3975-8710',
@@ -2061,6 +2099,144 @@
     function resetRekapSent() {
       saveRekapSent([]);
       renderRekapList();
+    }
+
+    // ------------------------------------------------------------
+    // Riwayat Submit Lead (Panel CS): gabungan lead hasil Input Lead Umum (manual)
+    // dan Input Lead Iklan (rotasi otomatis). Lead hasil Input Mandiri marketing
+    // (isSelfInput) tidak ikut karena bukan submitan CS. Murni tampilan, tidak
+    // mengubah data di Firestore.
+    // ------------------------------------------------------------
+    let riwayatModalOpen = false;
+    let riwayatInited = false;
+    let riwayatState = { preset: '7', dateFrom: '', dateTo: '', type: 'all' };
+    const RIWAYAT_MAX_ROWS = 300;
+
+    function formatTimeID(date) {
+      return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+    }
+
+    function openRiwayatModal() {
+      if (!riwayatInited) { riwayatInited = true; riwayatSetPreset('7'); } else { renderRiwayat(); }
+      riwayatModalOpen = true;
+      const overlay = document.getElementById('riwayatModalOverlay');
+      const box = document.getElementById('riwayatModalBox');
+      overlay.classList.remove('hidden', 'pointer-events-none');
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }
+
+    function closeRiwayatModal() {
+      riwayatModalOpen = false;
+      const overlay = document.getElementById('riwayatModalOverlay');
+      const box = document.getElementById('riwayatModalBox');
+      overlay.style.opacity = '0';
+      box.style.opacity = '0';
+      box.style.transform = 'scale(0.95)';
+      overlay.classList.add('pointer-events-none');
+      setTimeout(function () { if (!riwayatModalOpen) overlay.classList.add('hidden'); }, 200);
+    }
+
+    // Preset rentang cepat: 'today' | '7' | '30' | 'all' (kosongkan rentang tanggal).
+    function riwayatSetPreset(preset) {
+      riwayatState.preset = preset;
+      if (preset === 'all') {
+        riwayatState.dateFrom = '';
+        riwayatState.dateTo = '';
+      } else {
+        const days = preset === 'today' ? 1 : Number(preset);
+        const today = new Date();
+        const from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (days - 1));
+        riwayatState.dateFrom = toDateInputValue(from);
+        riwayatState.dateTo = toDateInputValue(today);
+      }
+      document.getElementById('riwayatDateFrom').value = riwayatState.dateFrom;
+      document.getElementById('riwayatDateTo').value = riwayatState.dateTo;
+      renderRiwayat();
+    }
+
+    function riwayatOnDateChange() {
+      riwayatState.preset = 'custom';
+      riwayatState.dateFrom = document.getElementById('riwayatDateFrom').value;
+      riwayatState.dateTo = document.getElementById('riwayatDateTo').value;
+      renderRiwayat();
+    }
+
+    function riwayatSetType(type) {
+      riwayatState.type = type;
+      renderRiwayat();
+    }
+
+    function riwayatChipHtml(label, active, onclick) {
+      const cls = active
+        ? 'bg-[var(--green-dark)] text-white border-[var(--green-dark)]'
+        : 'bg-white text-[#3f4d45] border-[var(--line)]';
+      return '<button type="button" onclick="' + onclick + '" class="text-xs font-semibold px-3 py-1.5 rounded-full border ' + cls + '">' + label + '</button>';
+    }
+
+    function renderRiwayat() {
+      const st = riwayatState;
+      const fromDate = st.dateFrom ? parseFilterDateValue(st.dateFrom, false) : null;
+      const toDate = st.dateTo ? parseFilterDateValue(st.dateTo, true) : null;
+
+      // Sumber: submitan CS saja (bukan input mandiri marketing), terbaru di atas.
+      const inRange = allLeadsData.filter(function (l) {
+        if (l.isSelfInput) return false;
+        const d = toJsDate(l.createdAt);
+        if (fromDate && d < fromDate) return false;
+        if (toDate && d > toDate) return false;
+        return true;
+      }).sort(function (a, b) { return toJsDate(b.createdAt) - toJsDate(a.createdAt); });
+
+      const adCount = inRange.filter(function (l) { return l.isAdLead === true; }).length;
+      const umumCount = inRange.length - adCount;
+      const rows = inRange.filter(function (l) {
+        if (st.type === 'iklan') return l.isAdLead === true;
+        if (st.type === 'umum') return l.isAdLead !== true;
+        return true;
+      });
+
+      document.getElementById('riwayatPresetWrap').innerHTML =
+        riwayatChipHtml('Hari Ini', st.preset === 'today', "riwayatSetPreset('today')") +
+        riwayatChipHtml('7 Hari', st.preset === '7', "riwayatSetPreset('7')") +
+        riwayatChipHtml('30 Hari', st.preset === '30', "riwayatSetPreset('30')") +
+        riwayatChipHtml('Semua', st.preset === 'all', "riwayatSetPreset('all')");
+
+      document.getElementById('riwayatTypeWrap').innerHTML =
+        riwayatChipHtml('Semua (' + inRange.length + ')', st.type === 'all', "riwayatSetType('all')") +
+        riwayatChipHtml('Umum (' + umumCount + ')', st.type === 'umum', "riwayatSetType('umum')") +
+        riwayatChipHtml('Iklan (' + adCount + ')', st.type === 'iklan', "riwayatSetType('iklan')");
+
+      document.getElementById('riwayatSummary').textContent =
+        rows.length + ' submitan' + (st.dateFrom || st.dateTo
+          ? ' (' + (st.dateFrom ? formatDateID(fromDate) : '...') + ' - ' + (st.dateTo ? formatDateID(toDate) : '...') + ')'
+          : ' (semua waktu)');
+
+      const listEl = document.getElementById('riwayatList');
+      if (!rows.length) {
+        listEl.innerHTML = '<p class="text-sm text-[#5c6b62] py-6 text-center">Belum ada submitan pada rentang ini.</p>';
+        return;
+      }
+      listEl.innerHTML = rows.slice(0, RIWAYAT_MAX_ROWS).map(function (l) {
+        const d = toJsDate(l.createdAt);
+        const isAd = l.isAdLead === true;
+        const badgeCls = isAd ? 'bg-[#fff3e0] text-[#b45309]' : 'bg-[#e8f1ec] text-[var(--green-dark)]';
+        return '<button type="button" onclick="openDetailModal(\'' + escapeHtml(l.id) + '\')" class="w-full text-left border border-[var(--line)] rounded-xl px-3.5 py-3 hover:bg-[#f6f4ef]">' +
+          '<div class="flex items-start justify-between gap-2">' +
+            '<span class="font-semibold text-sm">' + escapeHtml(l.buyerName || '-') + '</span>' +
+            '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ' + badgeCls + '">' + (isAd ? 'Iklan' : 'Umum') + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-[#5c6b62] mt-1">' + escapeHtml(l.waNumber || '-') + '</div>' +
+          '<div class="flex items-center justify-between gap-2 text-xs text-[#5c6b62] mt-1">' +
+            '<span>' + formatDateID(d) + ' &middot; ' + formatTimeID(d) + '</span>' +
+            '<span>Marketing: <b class="text-[var(--ink)]">' + escapeHtml(l.assignedTo || '-') + '</b></span>' +
+          '</div>' +
+        '</button>';
+      }).join('') + (rows.length > RIWAYAT_MAX_ROWS
+        ? '<p class="text-xs text-[#5c6b62] text-center pt-2">Menampilkan ' + RIWAYAT_MAX_ROWS + ' submitan terbaru. Persempit rentang tanggal untuk melihat sisanya.</p>'
+        : '');
     }
 
     function toggleWaMenu() {
@@ -2442,6 +2618,7 @@
         document.getElementById('csHeaderTitle').textContent = 'Podorukun Lead Tracker - Panel CS';
         document.getElementById('csHeaderSubtitle').textContent = 'Panel CS';
         document.getElementById('csInputSection').classList.remove('hidden');
+        document.getElementById('csHistoryBtn').classList.remove('hidden');
         showView('cs');
         startLeadsListenerCsAdmin();
       } else if (role === 'Admin') {
@@ -2449,6 +2626,7 @@
         document.getElementById('csHeaderTitle').textContent = 'Podorukun Lead Tracker - Panel SPV/Manager';
         document.getElementById('csHeaderSubtitle').textContent = 'Monitoring';
         document.getElementById('csInputSection').classList.add('hidden');
+        document.getElementById('csHistoryBtn').classList.add('hidden');
         showView('cs');
         startLeadsListenerCsAdmin();
       } else if (role === 'Marketing') {
@@ -2525,6 +2703,7 @@
           });
           renderMarketingGrid();
           if (currentDetailMarketing) renderDetailTable(currentDetailMarketing);
+          if (riwayatModalOpen) renderRiwayat();
           renderAdRotationInfo();
           updateNotifBadge('csAdmin', allLeadsData);
           processRealtimeNotifications('csAdmin', allLeadsData);
