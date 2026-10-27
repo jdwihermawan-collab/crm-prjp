@@ -612,6 +612,9 @@
               <div class="py-1.5">
                 <button type="button" onclick="sendRekapWA('group1')" class="wa-menu-item">Marketing Grup A<span id="waMenuNamesGroup1" class="wa-menu-names"></span></button>
                 <button type="button" onclick="sendRekapWA('group2')" class="wa-menu-item">Marketing Grup B<span id="waMenuNamesGroup2" class="wa-menu-names"></span></button>
+                <div class="border-t border-[var(--line)] my-1"></div>
+                <button type="button" onclick="openReminderLogModal()" class="wa-menu-item">Log Pengingat<span class="wa-menu-names">Siapa saja yang sudah mengingatkan marketing</span></button>
+                <button type="button" onclick="openActivityModal()" class="wa-menu-item">Aktivitas Marketing<span class="wa-menu-names">Kapan terakhir tiap marketing update data</span></button>
               </div>
             </div>
           </div>
@@ -785,6 +788,9 @@
               &#11013; Kembali ke Daftar Marketing
             </button>
             <div id="csSelectToggleWrap" class="flex items-center gap-2">
+              <button type="button" onclick="openActivityLogModal()" class="cancel-btn font-semibold text-sm px-4 py-2 rounded-lg">
+                Riwayat Aktivitas
+              </button>
               <button type="button" onclick="exportDetailTableToPdf()" class="font-semibold text-sm px-4 py-2 rounded-lg inline-flex items-center gap-1.5 text-white" style="background:linear-gradient(155deg,#1a8a63,var(--green-dark)); transition:opacity 0.15s ease;" title="Ekspor laporan PDF berkop PT Podo Rukun Jaya Properti sesuai kondisi filter yang sedang aktif">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"><path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1.5-1.5Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3.5V8h4.2" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 13h1.4a1.3 1.3 0 1 1 0 2.6H8.5V17m4-4v4m0-4h1.3c.9 0 1.3.6 1.3 1.5v1c0 .9-.4 1.5-1.3 1.5H12.5" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 Export PDF
@@ -1205,11 +1211,57 @@
   <div id="rekapModalOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-40 flex hidden items-center justify-center px-4" onclick="closeRekapModal()" style="transition:opacity 0.2s ease;">
     <div id="rekapModalBox" class="bg-white rounded-2xl p-5 w-full max-w-md opacity-0 scale-95 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()" style="transition:opacity 0.2s ease, transform 0.2s ease;">
       <h3 id="rekapModalTitle" class="font-bold text-lg mb-1">Kirim Pengingat</h3>
-      <p class="text-sm text-[#5c6b62] mb-4">Klik <b>Kirim</b> pada satu nama untuk membuka chat WhatsApp berisi pengingat follow-up hari ini, lalu tekan kirim di WhatsApp. Nama yang sudah diklik diberi tanda &#10003; (kosong lagi besok).</p>
+      <p class="text-sm text-[#5c6b62] mb-4">Klik <b>Kirim</b> pada satu nama untuk membuka chat WhatsApp berisi pengingat follow-up hari ini, lalu tekan kirim di WhatsApp. Nama yang sudah diingatkan hari ini (oleh akun CS/SPV mana pun) diberi tanda &#10003; beserta keterangan siapa dan jam berapa; mengirim ulang akan diminta konfirmasi dulu.</p>
       <div id="rekapModalList" class="space-y-2"></div>
       <div class="flex items-center gap-3 mt-4">
-        <button type="button" onclick="resetRekapSent()" class="cancel-btn font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">Reset Centang</button>
         <button type="button" onclick="closeRekapModal()" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL LOG PENGINGAT: akun CS/SPV mana yang sudah mengingatkan marketing -->
+  <!-- ============================================================ -->
+  <div id="reminderLogOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-40 flex hidden items-center justify-center px-4" onclick="closeReminderLogModal()" style="transition:opacity 0.2s ease;">
+    <div id="reminderLogBox" class="bg-white rounded-2xl p-5 w-full max-w-lg opacity-0 scale-95 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()" style="transition:opacity 0.2s ease, transform 0.2s ease;">
+      <h3 class="font-bold text-lg mb-1">Log Pengingat</h3>
+      <p class="text-sm text-[#5c6b62] mb-3">Daftar akun yang sudah mengirim pengingat ke marketing. Klik satu baris untuk melihat marketing mana saja yang diingatkan.</p>
+      <div id="reminderLogPresetWrap" class="flex flex-wrap gap-2 mb-3"></div>
+      <div id="reminderLogRanking" class="mb-3"></div>
+      <p id="reminderLogSummary" class="text-xs text-[#5c6b62] mb-2"></p>
+      <div id="reminderLogList" class="space-y-2"></div>
+      <div class="flex items-center gap-3 mt-4">
+        <button type="button" onclick="closeReminderLogModal()" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL AKTIVITAS MARKETING: kapan terakhir tiap marketing mengubah data -->
+  <!-- ============================================================ -->
+  <div id="activityOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-40 flex hidden items-center justify-center px-4" onclick="closeActivityModal()" style="transition:opacity 0.2s ease;">
+    <div id="activityBox" class="bg-white rounded-2xl p-5 w-full max-w-lg opacity-0 scale-95 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()" style="transition:opacity 0.2s ease, transform 0.2s ease;">
+      <h3 class="font-bold text-lg mb-1">Aktivitas Marketing</h3>
+      <p class="text-sm text-[#5c6b62] mb-3">Diurutkan dari yang paling lama tidak update. Yang dihitung update: ubah status, input lead mandiri, dan tandai/cabut Hot Prospek.</p>
+      <div id="activityList" class="space-y-2"></div>
+      <div class="flex items-center gap-3 mt-4">
+        <button type="button" onclick="closeActivityModal()" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL RIWAYAT AKTIVITAS: log detail aksi satu marketing (dari tombol di Detail Lead) -->
+  <!-- ============================================================ -->
+  <div id="activityLogOverlay" class="fixed inset-0 bg-black/50 opacity-0 pointer-events-none z-40 flex hidden items-center justify-center px-4" onclick="closeActivityLogModal()" style="transition:opacity 0.2s ease;">
+    <div id="activityLogBox" class="bg-white rounded-2xl p-5 w-full max-w-lg opacity-0 scale-95 max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()" style="transition:opacity 0.2s ease, transform 0.2s ease;">
+      <h3 id="activityLogTitle" class="font-bold text-lg mb-1">Riwayat Aktivitas</h3>
+      <div id="activityLogHeader" class="text-sm text-[#5c6b62] mb-3"></div>
+      <div id="activityLogPresetWrap" class="flex flex-wrap gap-2 mb-3"></div>
+      <p id="activityLogSummary" class="text-xs text-[#5c6b62] mb-2"></p>
+      <div id="activityLogList"></div>
+      <div class="flex items-center gap-3 mt-4">
+        <button type="button" onclick="closeActivityLogModal()" class="btn-primary text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex-1">Tutup</button>
       </div>
     </div>
   </div>
@@ -1783,6 +1835,10 @@
     // ------------------------------------------------------------
     function toggleHotProspek(leadId, currentIsHot) {
       db.collection('leads').doc(leadId).update({ isHot: !currentIsHot })
+        .then(function () {
+          const l = findLeadById(leadId);
+          logMarketingActivity(!currentIsHot ? 'Tandai Hot Prospek' : 'Cabut Hot Prospek', l ? l.buyerName : '', leadId);
+        })
         .catch(function (err) {
           alert('Gagal memperbarui tag Hot Prospek: ' + err.message);
         });
@@ -1800,6 +1856,7 @@
       db.collection('leads').doc(currentDetailLeadId).update({ isHot: newValue })
         .then(function () {
           updateDetailModalHotUI(newValue);
+          logMarketingActivity(newValue ? 'Tandai Hot Prospek' : 'Cabut Hot Prospek', lead.buyerName, lead.id);
         })
         .catch(function (err) {
           alert('Gagal memperbarui tag Hot Prospek: ' + err.message);
@@ -2004,7 +2061,7 @@
           ' - Status: ' + (l.status || '-') + ' - No WA: ' + (l.waNumber || '-');
       });
       return 'Halo ' + name + ', berikut adalah daftar lead yang wajib di-follow-up hari ini di Podorukun Group:\n\n' +
-        lines.join('\n') + '\n\nMohon segera ditindaklanjuti ya. Terima kasih!';
+        lines.join('\n') + '\n\nMohon segera ditindaklanjuti ya. Setelah di-follow-up, jangan lupa update status di CRM ya: https://prjp.co.id/crm\n\nTerima kasih!';
     }
 
     // Rekap WA per marketing: menu "Kirim Rekap WA" membuka daftar nama; setiap tombol "Kirim"
@@ -2040,6 +2097,8 @@
       closeWaMenu();
       if (!MARKETING_GROUPS[groupKey]) return;
       rekapActiveGroup = groupKey;
+      rekapConfirmName = null;
+      rekapSessionId = (currentUser ? currentUser.uid : 'anon') + '-' + Date.now();
       document.getElementById('rekapModalTitle').textContent =
         'Marketing Grup ' + (groupKey === 'group1' ? 'A' : 'B');
       renderRekapList();
@@ -2061,23 +2120,42 @@
       overlay.classList.add('pointer-events-none');
       setTimeout(function () { overlay.classList.add('hidden'); }, 200);
       rekapActiveGroup = null;
+      rekapConfirmName = null;
     }
 
     function renderRekapList() {
       const listEl = document.getElementById('rekapModalList');
       const names = MARKETING_GROUPS[rekapActiveGroup] || [];
-      const sent = getRekapSent();
       listEl.innerHTML = names.map(function (name) {
         const count = leadsDueTodayFor(name).length;
         const numOk = validateWaNumber(MARKETING_WA_NUMBERS[name] || '') === '';
-        const isSent = sent.indexOf(name) !== -1;
+        const todays = remindersTodayFor(name);   // terbaru di depan
+        const isSent = todays.length > 0;
         const safe = escapeHtml(name);
         const info = !numOk ? 'Nomor WA belum valid'
           : (count ? count + ' lead jatuh tempo' : 'Tidak ada lead jatuh tempo');
+        let warn = '';
+        if (isSent) {
+          const last = todays[0];
+          warn = '<p class="text-xs mt-1" style="color:var(--amber);">Hari ini sudah diingatkan oleh <b>' +
+            escapeHtml(last.senderName || '-') + '</b> (' + escapeHtml(last.senderEmail || '-') + ') pukul ' +
+            formatTimeID(toJsDate(last.createdAt)) +
+            (todays.length > 1 ? ' &middot; total ' + todays.length + 'x hari ini' : '') + '</p>';
+        }
+        // Konfirmasi kirim ulang (inline): klik "Ya, Kirim Lagi" = gesture baru, jadi WhatsApp tidak diblokir popup blocker.
+        if (rekapConfirmName === name && isSent && numOk) {
+          return '<div class="border rounded-xl px-3.5 py-3" style="border-color:var(--amber-dot);background:var(--amber-bg);">' +
+            '<p class="font-semibold text-sm">' + safe + '</p>' + warn +
+            '<p class="text-sm font-semibold mt-2">Yakin kirim lagi?</p>' +
+            '<div class="flex items-center gap-2 mt-2">' +
+              '<button type="button" onclick="cancelRekapConfirm()" class="cancel-btn font-semibold text-xs px-3.5 py-2 rounded-lg flex-1">Batal</button>' +
+              '<button type="button" onclick="sendRekapTo(\'' + safe + '\', true)" class="btn-primary text-white font-semibold text-xs px-3.5 py-2 rounded-lg flex-1">Ya, Kirim Lagi</button>' +
+            '</div></div>';
+        }
         return '<div class="flex items-center justify-between gap-3 border border-[var(--line)] rounded-xl px-3.5 py-2.5">' +
           '<div><p class="font-semibold text-sm">' + safe +
-            (isSent ? ' <span class="text-[var(--green-dark)]" title="Sudah dikirim">&#10003;</span>' : '') + '</p>' +
-            '<p class="text-xs text-[#5c6b62]">' + info + '</p></div>' +
+            (isSent ? ' <span class="text-[var(--green-dark)]" title="Sudah diingatkan hari ini">&#10003;</span>' : '') + '</p>' +
+            '<p class="text-xs text-[#5c6b62]">' + info + '</p>' + warn + '</div>' +
           '<button type="button"' + (numOk ? '' : ' disabled') + ' onclick="sendRekapTo(\'' + safe + '\')" ' +
             'class="btn-primary text-white font-semibold text-xs px-3.5 py-2 rounded-lg">' +
             (isSent ? 'Kirim Lagi' : 'Kirim') + '</button>' +
@@ -2085,14 +2163,26 @@
       }).join('');
     }
 
-    function sendRekapTo(name) {
+    function cancelRekapConfirm() {
+      rekapConfirmName = null;
+      renderRekapList();
+    }
+
+    // confirmed=true hanya dikirim dari tombol "Ya, Kirim Lagi". Jika marketing ini sudah
+    // diingatkan hari ini (oleh akun mana pun) dan belum dikonfirmasi, tampilkan konfirmasi dulu.
+    function sendRekapTo(name, confirmed) {
       const number = MARKETING_WA_NUMBERS[name] || '';
       if (validateWaNumber(number)) return;
-      const message = buildRekapMessage(name, leadsDueTodayFor(name));
+      if (!confirmed && remindersTodayFor(name).length) {
+        rekapConfirmName = name;
+        renderRekapList();
+        return;
+      }
+      rekapConfirmName = null;
+      const leads = leadsDueTodayFor(name);
+      const message = buildRekapMessage(name, leads);
       window.open('https://wa.me/' + toWaDigits(number) + '?text=' + encodeURIComponent(message), '_blank');
-      const sent = getRekapSent();
-      if (sent.indexOf(name) === -1) sent.push(name);
-      saveRekapSent(sent);
+      logReminderSent(name, leads.length);
       renderRekapList();
     }
 
@@ -2100,6 +2190,494 @@
       saveRekapSent([]);
       renderRekapList();
     }
+
+    // ------------------------------------------------------------
+    // Log Pengingat (Panel CS/SPV): setiap klik "Kirim" di modal rekap dicatat ke koleksi
+    // Firestore 'reminderLogs' (satu dokumen per marketing yang diingatkan), sehingga semua
+    // akun CS/Admin melihat data yang sama (bukan per-browser seperti localStorage).
+    //  - Peringatan "sudah diingatkan hari ini" + konfirmasi kirim ulang: renderRekapList()/sendRekapTo().
+    //  - Menu "Log Pengingat": dikelompokkan per sesi (satu kali membuka modal Grup A/B oleh satu
+    //    akun = satu baris); klik baris untuk melihat marketing mana saja yang diingatkan.
+    // Listener hanya dijalankan untuk CS/Admin (lewat startLeadsListenerCsAdmin); role Marketing
+    // tidak pernah memuatnya, dan aksesnya juga harus ditutup di Firestore Rules.
+    // ------------------------------------------------------------
+    let reminderLogsData = [];          // 30 hari terakhir, terbaru di depan
+    let unsubscribeReminderLogs = null;
+    let reminderLogModalOpen = false;
+    let reminderLogPreset = 'today';    // 'today' | '7' | '30'
+    let reminderLogExpanded = {};       // { sessionKey: true } baris yang sedang dibuka detailnya
+    let rekapSessionId = null;          // id sesi: berganti setiap modal Grup A/B dibuka
+    let rekapConfirmName = null;        // nama marketing yang sedang menunggu konfirmasi "kirim lagi"
+
+    function startReminderLogsListener() {
+      if (typeof unsubscribeReminderLogs === 'function') { unsubscribeReminderLogs(); unsubscribeReminderLogs = null; }
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      since.setHours(0, 0, 0, 0);
+      // where + orderBy pada field yang sama: tidak butuh composite index.
+      unsubscribeReminderLogs = db.collection('reminderLogs')
+        .where('createdAt', '>=', since)
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(function (snapshot) {
+          reminderLogsData = snapshot.docs.map(function (doc) {
+            return Object.assign({ id: doc.id }, doc.data({ serverTimestamps: 'estimate' }));
+          });
+          if (rekapActiveGroup) renderRekapList();
+          if (reminderLogModalOpen) renderReminderLog();
+        }, function (err) {
+          console.error('Gagal memuat log pengingat:', err);
+        });
+    }
+
+    // Catatan pengingat hari ini (tanggal lokal) untuk satu marketing, terbaru di depan.
+    function remindersTodayFor(name) {
+      const todayKey = toDateInputValue(new Date());
+      return reminderLogsData.filter(function (r) {
+        return r.marketingName === name && toDateInputValue(toJsDate(r.createdAt)) === todayKey;
+      });
+    }
+
+    function logReminderSent(name, leadCount) {
+      if (!currentUser) return;
+      db.collection('reminderLogs').add({
+        senderUid: currentUser.uid,
+        senderName: currentUser.name,
+        senderEmail: currentUser.email,
+        senderRole: currentUser.role,
+        marketingName: name,
+        groupKey: rekapActiveGroup || '',
+        leadCount: leadCount,
+        sessionId: rekapSessionId || '',
+        createdAt: FieldValue.serverTimestamp()
+      }).catch(function (err) {
+        alert('Chat WhatsApp sudah dibuka, tetapi gagal mencatat log pengingat: ' + err.message);
+      });
+    }
+
+    function reminderGroupLabel(key) {
+      return key === 'group1' ? 'Grup A' : (key === 'group2' ? 'Grup B' : '');
+    }
+
+    function openReminderLogModal() {
+      closeWaMenu();
+      if (!currentUser || (currentUser.role !== 'CS' && currentUser.role !== 'Admin')) return;
+      reminderLogModalOpen = true;
+      renderReminderLog();
+      const overlay = document.getElementById('reminderLogOverlay');
+      const box = document.getElementById('reminderLogBox');
+      overlay.classList.remove('hidden', 'pointer-events-none');
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }
+
+    function closeReminderLogModal() {
+      reminderLogModalOpen = false;
+      const overlay = document.getElementById('reminderLogOverlay');
+      const box = document.getElementById('reminderLogBox');
+      overlay.style.opacity = '0';
+      box.style.opacity = '0';
+      box.style.transform = 'scale(0.95)';
+      overlay.classList.add('pointer-events-none');
+      setTimeout(function () { if (!reminderLogModalOpen) overlay.classList.add('hidden'); }, 200);
+    }
+
+    function reminderLogSetPreset(preset) {
+      reminderLogPreset = preset;
+      renderReminderLog();
+    }
+
+    function toggleReminderLogDetail(key) {
+      reminderLogExpanded[key] = !reminderLogExpanded[key];
+      renderReminderLog();
+    }
+
+    function renderReminderLog() {
+      const days = reminderLogPreset === 'today' ? 1 : Number(reminderLogPreset);
+      const now = new Date();
+      const from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1));
+      const docs = reminderLogsData.filter(function (r) { return toJsDate(r.createdAt) >= from; });
+
+      document.getElementById('reminderLogPresetWrap').innerHTML =
+        riwayatChipHtml('Hari Ini', reminderLogPreset === 'today', "reminderLogSetPreset('today')") +
+        riwayatChipHtml('7 Hari', reminderLogPreset === '7', "reminderLogSetPreset('7')") +
+        riwayatChipHtml('30 Hari', reminderLogPreset === '30', "reminderLogSetPreset('30')");
+
+      // Peringkat: akun mana yang paling sering mengingatkan (jumlah pengingat terkirim) pada rentang ini.
+      const bySender = {};
+      docs.forEach(function (r) {
+        const k = r.senderEmail || r.senderUid || '-';
+        if (!bySender[k]) bySender[k] = { name: r.senderName || k, email: r.senderEmail || '-', count: 0 };
+        bySender[k].count++;
+      });
+      const rank = Object.keys(bySender).map(function (k) { return bySender[k]; })
+        .sort(function (a, b) { return b.count - a.count; });
+      const maxCount = rank.length ? rank[0].count : 1;
+      document.getElementById('reminderLogRanking').innerHTML = rank.length
+        ? '<div class="border border-[var(--line)] rounded-xl px-3.5 py-3">' +
+            '<p class="text-xs font-bold text-[#5c6b62] mb-2">Paling sering mengingatkan</p>' +
+            rank.map(function (r) {
+              return '<div class="flex items-center gap-2 text-xs mb-1.5" title="' + escapeHtml(r.email) + '">' +
+                '<span class="font-semibold truncate" style="width:6.5rem;">' + escapeHtml(r.name) + '</span>' +
+                '<div class="flex-1 h-2 rounded-full" style="background:#eceae3;"><div class="h-2 rounded-full" style="background:var(--green);width:' + Math.round(r.count / maxCount * 100) + '%;"></div></div>' +
+                '<span class="font-semibold whitespace-nowrap">' + r.count + ' kirim</span>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '';
+
+      // Kelompokkan per sesi (urut naik di dalam sesi, sesi terbaru di atas).
+      const sessMap = {};
+      const sessions = [];
+      docs.slice().reverse().forEach(function (r) {
+        const key = r.sessionId || r.id;
+        let sess = sessMap[key];
+        if (!sess) {
+          sess = sessMap[key] = { key: key, senderName: r.senderName, senderEmail: r.senderEmail, senderRole: r.senderRole, groupKey: r.groupKey, items: [] };
+          sessions.push(sess);
+        }
+        sess.items.push(r);
+      });
+      sessions.sort(function (a, b) {
+        return toJsDate(b.items[b.items.length - 1].createdAt) - toJsDate(a.items[a.items.length - 1].createdAt);
+      });
+
+      document.getElementById('reminderLogSummary').textContent =
+        sessions.length + ' sesi pengingat \u00b7 ' + docs.length + ' marketing diingatkan';
+
+      const listEl = document.getElementById('reminderLogList');
+      if (!sessions.length) {
+        listEl.innerHTML = '<p class="text-sm text-[#5c6b62] py-6 text-center">Belum ada pengingat pada rentang ini.</p>';
+        return;
+      }
+      listEl.innerHTML = sessions.map(function (sess) {
+        const first = toJsDate(sess.items[0].createdAt);
+        const last = toJsDate(sess.items[sess.items.length - 1].createdAt);
+        const timeText = formatTimeID(first) + (formatTimeID(last) !== formatTimeID(first) ? ' &ndash; ' + formatTimeID(last) : '');
+        const open = !!reminderLogExpanded[sess.key];
+        const group = reminderGroupLabel(sess.groupKey);
+        const roleBadge = sess.senderRole
+          ? ' <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" style="background:#e8f1ec;color:var(--green-dark);">' + escapeHtml(sess.senderRole === 'Admin' ? 'SPV' : sess.senderRole) + '</span>'
+          : '';
+        const detail = open
+          ? '<div class="border-t border-[var(--line)] px-3.5 py-2.5 space-y-1.5" style="background:#faf9f5;">' +
+              sess.items.map(function (r) {
+                return '<div class="flex items-center justify-between gap-2 text-sm">' +
+                  '<span class="font-semibold">' + escapeHtml(r.marketingName || '-') + '</span>' +
+                  '<span class="text-xs text-[#5c6b62]">' + (Number(r.leadCount) || 0) + ' lead &middot; ' + formatTimeID(toJsDate(r.createdAt)) + '</span>' +
+                '</div>';
+              }).join('') +
+            '</div>'
+          : '';
+        return '<div class="border border-[var(--line)] rounded-xl overflow-hidden">' +
+          '<button type="button" onclick="toggleReminderLogDetail(\'' + escapeHtml(sess.key) + '\')" class="w-full text-left px-3.5 py-3 hover:bg-[#f6f4ef]">' +
+            '<div class="flex items-start justify-between gap-2">' +
+              '<span class="font-semibold text-sm">' + escapeHtml(sess.senderName || '-') + roleBadge + '</span>' +
+              '<span class="text-xs font-semibold text-[#5c6b62] whitespace-nowrap">' + timeText + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-[#5c6b62] mt-0.5">' + escapeHtml(sess.senderEmail || '-') + '</div>' +
+            '<div class="flex items-center justify-between gap-2 text-xs text-[#5c6b62] mt-1">' +
+              '<span>' + formatDateID(first) + (group ? ' &middot; ' + group : '') + '</span>' +
+              '<span><b class="text-[var(--ink)]">' + sess.items.length + '</b> marketing ' + (open ? '&#9652;' : '&#9662;') + '</span>' +
+            '</div>' +
+          '</button>' + detail +
+        '</div>';
+      }).join('');
+    }
+
+    // ------------------------------------------------------------
+    // Aktivitas Marketing: koleksi 'marketingActivity' (satu dokumen per akun marketing, id = uid).
+    //  - Marketing menulis dokumennya sendiri setiap kali mengubah data (update status, input lead
+    //    mandiri, tandai/cabut Hot Prospek) dan saat membuka aplikasi: logMarketingActivity()/logMarketingLogin().
+    //  - CS/Admin hanya membaca (listener di startLeadsListenerCsAdmin), lalu menampilkannya di kartu
+    //    marketing dan di menu "Aktivitas Marketing". Dokumen dicocokkan lewat nama (sama dengan assignedTo).
+    //  - Warna: hijau = update hari ini, kuning = kemarin, merah = 2 hari atau lebih, abu-abu = belum ada catatan.
+    // ------------------------------------------------------------
+    let marketingActivityData = {};      // { 'nama (lowercase)': dokumen aktivitas }
+    let unsubscribeMarketingActivity = null;
+    let activityModalOpen = false;
+
+    // Menulis dua hal sekaligus (atomik): ringkasan terbaru di marketingActivity/{uid} untuk kartu
+    // dashboard, dan satu entri di subkoleksi logs untuk tombol "Riwayat Aktivitas".
+    function logMarketingActivity(action, leadName, leadId, detail) {
+      if (!currentUser || currentUser.role !== 'Marketing') return;   // aksi CS/Admin tidak dicatat
+      const ref = db.collection('marketingActivity').doc(currentUser.uid);
+      const batch = db.batch();
+      batch.set(ref, {
+        name: currentUser.name,
+        lastUpdateAt: FieldValue.serverTimestamp(),
+        lastAction: action,
+        lastLeadName: leadName || ''
+      }, { merge: true });
+      batch.set(ref.collection('logs').doc(), {
+        action: action,
+        leadName: leadName || '',
+        leadId: leadId || '',
+        detail: detail || '',
+        createdAt: FieldValue.serverTimestamp()
+      });
+      batch.commit().catch(function (err) {
+        console.error('Gagal mencatat aktivitas marketing:', err);
+      });
+    }
+
+    function logMarketingLogin() {
+      if (!currentUser || currentUser.role !== 'Marketing') return;
+      db.collection('marketingActivity').doc(currentUser.uid).set({
+        name: currentUser.name,
+        lastLoginAt: FieldValue.serverTimestamp()
+      }, { merge: true }).catch(function (err) {
+        console.error('Gagal mencatat login marketing:', err);
+      });
+    }
+
+    function startMarketingActivityListener() {
+      if (typeof unsubscribeMarketingActivity === 'function') { unsubscribeMarketingActivity(); unsubscribeMarketingActivity = null; }
+      unsubscribeMarketingActivity = db.collection('marketingActivity').onSnapshot(function (snapshot) {
+        const map = {};
+        snapshot.docs.forEach(function (doc) {
+          const d = doc.data({ serverTimestamps: 'estimate' });
+          if (d.name) map[String(d.name).trim().toLowerCase()] = Object.assign({ uid: doc.id }, d);
+        });
+        marketingActivityData = map;
+        renderMarketingGrid();
+        if (activityModalOpen) renderActivityList();
+      }, function (err) {
+        console.error('Gagal memuat aktivitas marketing:', err);
+      });
+    }
+
+    function marketingActivityFor(name) {
+      return marketingActivityData[String(name || '').trim().toLowerCase()] || null;
+    }
+
+    function timeAgoID(date) {
+      const diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
+      if (diffMin < 1) return 'baru saja';
+      if (diffMin < 60) return diffMin + ' menit lalu';
+      const dayDiff = daysDiffDateOnly(new Date(), date);
+      if (dayDiff <= 0) return Math.floor(diffMin / 60) + ' jam lalu';
+      if (dayDiff === 1) return 'kemarin ' + formatTimeID(date);
+      return dayDiff + ' hari lalu';
+    }
+
+    // Level warna berdasarkan selisih hari kalender sejak lastUpdateAt.
+    function activityLevel(act) {
+      if (!act || !act.lastUpdateAt) return 'none';
+      const diff = daysDiffDateOnly(new Date(), toJsDate(act.lastUpdateAt));
+      return diff <= 0 ? 'green' : (diff === 1 ? 'amber' : 'red');
+    }
+
+    function activityDotHtml(level) {
+      const color = level === 'green' ? 'var(--green)' : (level === 'amber' ? 'var(--amber-dot)' : (level === 'red' ? 'var(--red-dot)' : '#b8b8b0'));
+      return '<span style="display:inline-block;width:0.5rem;height:0.5rem;border-radius:999px;flex-shrink:0;background:' + color + ';"></span>';
+    }
+
+    function activityBadgeHtml(act) {
+      const level = activityLevel(act);
+      const text = level === 'none'
+        ? 'Belum ada aktivitas tercatat'
+        : 'Terakhir update: <b class="text-[var(--ink)]">' + timeAgoID(toJsDate(act.lastUpdateAt)) + '</b>';
+      return '<div class="flex items-center gap-1.5">' + activityDotHtml(level) + '<span>' + text + '</span></div>';
+    }
+
+    function openActivityModal() {
+      closeWaMenu();
+      if (!currentUser || (currentUser.role !== 'CS' && currentUser.role !== 'Admin')) return;
+      activityModalOpen = true;
+      renderActivityList();
+      const overlay = document.getElementById('activityOverlay');
+      const box = document.getElementById('activityBox');
+      overlay.classList.remove('hidden', 'pointer-events-none');
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+    }
+
+    function closeActivityModal() {
+      activityModalOpen = false;
+      const overlay = document.getElementById('activityOverlay');
+      const box = document.getElementById('activityBox');
+      overlay.style.opacity = '0';
+      box.style.opacity = '0';
+      box.style.transform = 'scale(0.95)';
+      overlay.classList.add('pointer-events-none');
+      setTimeout(function () { if (!activityModalOpen) overlay.classList.add('hidden'); }, 200);
+    }
+
+    function renderActivityList() {
+      // Semua marketing yang dikenal (grup rekap) + marketing lain yang sudah punya catatan aktivitas.
+      const names = [];
+      Object.keys(MARKETING_GROUPS).forEach(function (k) {
+        MARKETING_GROUPS[k].forEach(function (n) { names.push(n); });
+      });
+      Object.keys(marketingActivityData).forEach(function (k) {
+        const n = marketingActivityData[k].name;
+        if (n && !names.some(function (x) { return x.trim().toLowerCase() === k; })) names.push(n);
+      });
+      const rows = names.map(function (n) {
+        const act = marketingActivityFor(n);
+        return { name: n, act: act, ts: act && act.lastUpdateAt ? toJsDate(act.lastUpdateAt).getTime() : 0 };
+      }).sort(function (a, b) { return a.ts - b.ts; });   // belum pernah / paling lama di atas
+
+      document.getElementById('activityList').innerHTML = rows.map(function (r) {
+        const level = activityLevel(r.act);
+        const act = r.act;
+        const last = level === 'none' ? 'Belum ada aktivitas tercatat'
+          : timeAgoID(toJsDate(act.lastUpdateAt)) + ' (' + formatDateID(toJsDate(act.lastUpdateAt)) + ' ' + formatTimeID(toJsDate(act.lastUpdateAt)) + ')';
+        const what = level === 'none' ? ''
+          : '<p class="text-xs text-[#5c6b62] mt-0.5">' + escapeHtml(act.lastAction || '-') + (act.lastLeadName ? ' &middot; ' + escapeHtml(act.lastLeadName) : '') + '</p>';
+        const login = act && act.lastLoginAt
+          ? '<p class="text-xs text-[#8a968f] mt-0.5">Terakhir buka aplikasi: ' + timeAgoID(toJsDate(act.lastLoginAt)) + '</p>' : '';
+        return '<div class="border border-[var(--line)] rounded-xl px-3.5 py-3">' +
+          '<div class="flex items-center gap-2">' + activityDotHtml(level) + '<span class="font-semibold text-sm">' + escapeHtml(r.name) + '</span></div>' +
+          '<p class="text-xs text-[#5c6b62] mt-1">Terakhir update: <b class="text-[var(--ink)]">' + last + '</b></p>' + what + login +
+        '</div>';
+      }).join('');
+    }
+
+    // ------------------------------------------------------------
+    // Riwayat Aktivitas (tombol di Detail Lead per marketing): membaca subkoleksi
+    // marketingActivity/{uid}/logs selama modal terbuka (30 hari terakhir, maks. 300 entri terbaru),
+    // lalu menyaring Hari Ini / 7 Hari / 30 Hari di sisi klien. Berhenti mendengarkan saat modal ditutup.
+    // where + orderBy pada field yang sama (createdAt): tidak butuh composite index.
+    // ------------------------------------------------------------
+    let activityLogModalOpen = false;
+    let unsubscribeActivityLog = null;
+    let activityLogName = '';
+    let activityLogDocs = [];
+    let activityLogLoading = false;
+    let activityLogError = '';
+    let activityLogPreset = 'today';    // 'today' | '7' | '30'
+    const ACTIVITY_LOG_LIMIT = 300;
+
+    function openActivityLogModal() {
+      if (!currentUser || (currentUser.role !== 'CS' && currentUser.role !== 'Admin')) return;
+      if (!currentDetailMarketing) return;
+      if (typeof unsubscribeActivityLog === 'function') { unsubscribeActivityLog(); unsubscribeActivityLog = null; }
+      activityLogName = currentDetailMarketing;
+      activityLogDocs = [];
+      activityLogError = '';
+      activityLogPreset = 'today';
+      activityLogModalOpen = true;
+      const act = marketingActivityFor(activityLogName);
+      activityLogLoading = !!(act && act.uid);
+      renderActivityLog();
+      const overlay = document.getElementById('activityLogOverlay');
+      const box = document.getElementById('activityLogBox');
+      overlay.classList.remove('hidden', 'pointer-events-none');
+      void overlay.offsetWidth;
+      overlay.style.opacity = '1';
+      box.style.opacity = '1';
+      box.style.transform = 'scale(1)';
+      if (!act || !act.uid) return;
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      since.setHours(0, 0, 0, 0);
+      unsubscribeActivityLog = db.collection('marketingActivity').doc(act.uid).collection('logs')
+        .where('createdAt', '>=', since)
+        .orderBy('createdAt', 'desc')
+        .limit(ACTIVITY_LOG_LIMIT)
+        .onSnapshot(function (snapshot) {
+          activityLogDocs = snapshot.docs.map(function (doc) {
+            return Object.assign({ id: doc.id }, doc.data({ serverTimestamps: 'estimate' }));
+          });
+          activityLogLoading = false;
+          if (activityLogModalOpen) renderActivityLog();
+        }, function (err) {
+          activityLogLoading = false;
+          activityLogError = err.message;
+          if (activityLogModalOpen) renderActivityLog();
+        });
+    }
+
+    function closeActivityLogModal() {
+      activityLogModalOpen = false;
+      if (typeof unsubscribeActivityLog === 'function') { unsubscribeActivityLog(); unsubscribeActivityLog = null; }
+      const overlay = document.getElementById('activityLogOverlay');
+      const box = document.getElementById('activityLogBox');
+      overlay.style.opacity = '0';
+      box.style.opacity = '0';
+      box.style.transform = 'scale(0.95)';
+      overlay.classList.add('pointer-events-none');
+      setTimeout(function () { if (!activityLogModalOpen) overlay.classList.add('hidden'); }, 200);
+    }
+
+    function activityLogSetPreset(preset) {
+      activityLogPreset = preset;
+      renderActivityLog();
+    }
+
+    function renderActivityLog() {
+      const act = marketingActivityFor(activityLogName);
+      document.getElementById('activityLogTitle').textContent = 'Riwayat Aktivitas: ' + activityLogName;
+      document.getElementById('activityLogHeader').innerHTML = activityBadgeHtml(act) +
+        (act && act.lastLoginAt ? '<div class="text-xs text-[#8a968f] mt-0.5">Terakhir buka aplikasi: ' + timeAgoID(toJsDate(act.lastLoginAt)) + '</div>' : '');
+      document.getElementById('activityLogPresetWrap').innerHTML =
+        riwayatChipHtml('Hari Ini', activityLogPreset === 'today', "activityLogSetPreset('today')") +
+        riwayatChipHtml('7 Hari', activityLogPreset === '7', "activityLogSetPreset('7')") +
+        riwayatChipHtml('30 Hari', activityLogPreset === '30', "activityLogSetPreset('30')");
+
+      const listEl = document.getElementById('activityLogList');
+      const summaryEl = document.getElementById('activityLogSummary');
+      if (!act || !act.uid) {
+        summaryEl.textContent = '';
+        listEl.innerHTML = '<p class="text-sm text-[#5c6b62] py-6 text-center">Belum ada aktivitas tercatat untuk marketing ini.</p>';
+        return;
+      }
+      if (activityLogError) {
+        summaryEl.textContent = '';
+        listEl.innerHTML = '<p class="text-sm py-6 text-center" style="color:var(--red);">Gagal memuat riwayat: ' + escapeHtml(activityLogError) + '</p>';
+        return;
+      }
+      if (activityLogLoading) {
+        summaryEl.textContent = '';
+        listEl.innerHTML = '<p class="text-sm text-[#5c6b62] py-6 text-center">Memuat riwayat...</p>';
+        return;
+      }
+
+      const days = activityLogPreset === 'today' ? 1 : Number(activityLogPreset);
+      const now = new Date();
+      const from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1));
+      const docs = activityLogDocs.filter(function (r) { return toJsDate(r.createdAt) >= from; });
+      summaryEl.textContent = docs.length + ' aktivitas' +
+        (activityLogDocs.length >= ACTIVITY_LOG_LIMIT ? ' (menampilkan ' + ACTIVITY_LOG_LIMIT + ' entri terbaru)' : '');
+      if (!docs.length) {
+        listEl.innerHTML = '<p class="text-sm text-[#5c6b62] py-6 text-center">Tidak ada aktivitas pada rentang ini.</p>';
+        return;
+      }
+
+      let html = '';
+      let lastDayKey = '';
+      docs.forEach(function (r) {
+        const d = toJsDate(r.createdAt);
+        const dayKey = toDateInputValue(d);
+        if (dayKey !== lastDayKey) {
+          lastDayKey = dayKey;
+          const diff = daysDiffDateOnly(new Date(), d);
+          const label = diff <= 0 ? 'Hari ini' : (diff === 1 ? 'Kemarin' : formatDateID(d));
+          html += '<p class="text-xs font-bold text-[#5c6b62] mt-3 mb-1.5">' + label + '</p>';
+        }
+        html += '<div class="border border-[var(--line)] rounded-xl px-3.5 py-2.5 mb-1.5">' +
+          '<div class="flex items-start justify-between gap-2">' +
+            '<span class="font-semibold text-sm">' + escapeHtml(r.action || '-') + '</span>' +
+            '<span class="text-xs font-semibold text-[#5c6b62] whitespace-nowrap">' + formatTimeID(d) + '</span>' +
+          '</div>' +
+          (r.leadName ? '<p class="text-xs text-[#5c6b62] mt-0.5">Lead: ' + escapeHtml(r.leadName) + '</p>' : '') +
+          (r.detail ? '<p class="text-xs text-[#8a968f] mt-0.5">' + escapeHtml(r.detail) + '</p>' : '') +
+        '</div>';
+      });
+      listEl.innerHTML = html;
+    }
+
+    // Segarkan teks "x jam lalu" secara berkala (tanpa menunggu data baru) selama Panel CS/Admin terbuka.
+    setInterval(function () {
+      if (!currentUser || (currentUser.role !== 'CS' && currentUser.role !== 'Admin')) return;
+      renderMarketingGrid();
+      if (activityModalOpen) renderActivityList();
+    }, 5 * 60 * 1000);
 
     // ------------------------------------------------------------
     // Riwayat Submit Lead (Panel CS): gabungan lead hasil Input Lead Umum (manual)
@@ -2634,6 +3212,7 @@
         const initial = (displayName || 'M').trim().charAt(0).toUpperCase();
         document.getElementById('marketingAvatar').textContent = initial;
         showView('marketing');
+        logMarketingLogin();
         startLeadsListenerMarketing(displayName);
       } else {
         loginError.textContent = 'Role tidak dikenali: ' + role;
@@ -2658,6 +3237,19 @@
         unsubscribeRotation();
         unsubscribeRotation = null;
       }
+      if (typeof unsubscribeReminderLogs === 'function') {
+        unsubscribeReminderLogs();
+        unsubscribeReminderLogs = null;
+      }
+      reminderLogsData = [];
+      if (reminderLogModalOpen) closeReminderLogModal();
+      if (typeof unsubscribeMarketingActivity === 'function') {
+        unsubscribeMarketingActivity();
+        unsubscribeMarketingActivity = null;
+      }
+      marketingActivityData = {};
+      if (activityModalOpen) closeActivityModal();
+      if (activityLogModalOpen) closeActivityLogModal();
       adRotationCounter = null;
       allLeadsData = [];
       marketingLeadsData = [];
@@ -2687,6 +3279,8 @@
     // ------------------------------------------------------------
     function startLeadsListenerCsAdmin() {
       cleanupLeadsListener();
+      startReminderLogsListener();
+      startMarketingActivityListener();
       // Counter giliran rotasi iklan (dokumen terpisah, tidak terpengaruh tambah/hapus lead).
       unsubscribeRotation = db.collection('settings').doc('adRotation').onSnapshot(function (snap) {
         adRotationCounter = snap.exists ? (Number(snap.data().counter) || 0) : null;
@@ -2736,6 +3330,7 @@
             '<div><p class="text-xs text-[#5c6b62]">Total Lead Aktif</p><p class="text-2xl font-bold mt-0.5">' + aktif + '</p></div>' +
             '<div class="text-right"><p class="text-xs text-[#5c6b62]">Belum Follow-Up</p><p class="text-2xl font-bold mt-0.5 text-[var(--red)]">' + belum + '</p></div>' +
           '</div>' +
+          '<div class="mt-3 pt-3 text-xs text-[#5c6b62]" style="border-top:1px solid var(--line);">' + activityBadgeHtml(marketingActivityFor(name)) + '</div>' +
         '</button>';
       }).join('');
     }
@@ -2979,8 +3574,10 @@
         '\uD83D\uDC64 Nama: ' + lead.buyerName + '\n' +
         '\uD83D\uDCF1 No WA: ' + lead.waNumber + '\n' +
         '\uD83D\uDCCD Proyek: ' + lead.project + '\n' +
-        '\uD83D\uDD17 Sumber: ' + lead.adSource + '\n\n' +
-        'Yuk segera dicek dan di-update statusnya terus ya di CRM Podorukun. Terima kasih!';
+        '\uD83D\uDD17 Sumber: ' + lead.adSource + '\n' +
+        (lead.csNote ? '\uD83D\uDCDD Catatan: ' + lead.csNote + '\n' : '') + '\n' +
+        'Yuk segera dicek dan dihubungi ya. Setelah selesai chat, jangan lupa update statusnya di CRM ya: https://prjp.co.id/crm\n\n' +
+        'Terima kasih!';
       const url = 'https://wa.me/' + toWaDigits(number) + '?text=' + encodeURIComponent(message);
       window.open(url, '_blank');
     }
@@ -3386,7 +3983,8 @@
           nextFollowUpDate: defaultNextFollowUp(),
           createdAt: FieldValue.serverTimestamp(),
           lastUpdated: FieldValue.serverTimestamp()
-        }).then(function () {
+        }).then(function (newLeadRef) {
+          logMarketingActivity('Input lead mandiri', buyerName, newLeadRef.id, project);
           closeSelfLeadModal();
           // onSnapshot pada koleksi 'leads' (where assignedTo == nama marketing) akan otomatis
           // menampilkan kartu lead baru ini secara real-time, tanpa perlu refresh manual.
@@ -3528,8 +4126,13 @@
 
       if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan...'; }
 
+      const updatedLead = findLeadById(currentModalLeadId);
+      const updatedLeadId = currentModalLeadId;
+      const oldStatus = updatedLead ? (updatedLead.status || '-') : '-';
       db.collection('leads').doc(currentModalLeadId).update(updatePayload)
         .then(function () {
+          logMarketingActivity('Update status ke ' + newStatus, updatedLead ? updatedLead.buyerName : '', updatedLeadId,
+            oldStatus + ' \u2192 ' + newStatus + ' \u00b7 Catatan: ' + (updateNote.length > 120 ? updateNote.slice(0, 120) + '...' : updateNote));
           closeModal();
         })
         .catch(function (err) {
